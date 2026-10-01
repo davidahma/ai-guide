@@ -4,6 +4,9 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+- Update the Markdown renderer and anchor plugin. Keep Mermaid on its tested major version because the v12 dependency tree currently reports high-severity advisories; retain the existing site diagram behavior.
+- Refresh the five-case invoice example under Node 24.20.0 and rebind its evaluation report, raw runner output, and review-only release to the changed dependency lock. No workflow, control, schema, or production claim changes.
+
 ## [2.4.7] - 2026-09-25
 
 - Add a workflow-specific team coverage view to the capability roadmap. It names the business-analysis, product, architecture, data, engineering, evaluation, security, adoption, and service work to cover without prescribing eight full-time roles or letting a title confer approval authority.
