@@ -128,18 +128,19 @@ After verifying the new installation against the existing workspace, remove only
 
 ### Update an existing local installation
 
-After validating the trusted checkout, use the official cachebuster helper on the installed source package so Codex refreshes it even if its base version has not changed:
+For a new Guide release, validate the trusted checkout, replace the installed source package, and reinstall through Codex. Read `codex plugin list --json` first to confirm the existing plugin's marketplace name; substitute that name if it is not `personal`:
 
 ```bash
-python3 ~/.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py
 npm run plugin:sync
 npm run plugin:validate
 node scripts/install-guide-plugin.mjs --replace
-python3 ~/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py ~/plugins/applied-ai-field-guide
 codex plugin add applied-ai-field-guide@personal
+codex plugin list --json
 ```
 
-Stop if marketplace validation fails, and use its validated name in the final command. Keep the helper's default cachebuster; do not edit the marketplace or cache by hand. Start a new task after reinstallation to pick up the changed skills and MCP process.
+Confirm that the installed entry reports the new release version and is enabled. Start a new task after reinstallation to pick up the changed skills and MCP process. Do not edit the marketplace or cache by hand.
+
+For a same-version development refresh, use the official `update_plugin_cachebuster.py` helper if the host provides it. Helper locations vary, and the [current OpenAI plugin-authoring source](https://github.com/openai/plugins/tree/main/.agents/skills/plugin-creator) does not include it. If it is unavailable, prepare and validate a new version rather than inventing a cache edit. An older host may also provide `read_marketplace_name.py`; the installed CLI listing is the supported way to inspect the marketplace on this host.
 
 ## Disable and recover
 

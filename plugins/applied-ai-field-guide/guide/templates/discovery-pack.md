@@ -132,6 +132,20 @@ Use direct evidence to test the stated workflow before assigning readiness or pr
 
 Mark an uninspected decision-bearing surface `unknown`. Do not infer readiness from document completeness or replace missing target access with a higher confidence score.
 
+## Workflow step redesign
+
+For each consequential step, ask why it exists before proposing automation. Use the recorded case and return paths, including work outside the main system. Keep an unresolved policy or ownership question visible.
+
+| Observed step | Why it exists | Evidence and limitation | Keep / remove / combine / repair | Proposed change / later mechanism record | Retained control and exception path | Decision owner | Acceptance check and next test |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| | | | | | | | |
+
+Removing a repeated chase may require repairing its upstream input. Combining screens may still require separate approval and posting events. A lower step count is not permission to remove a policy-required control or to hide a wait, exception, or reviewer task.
+
+During qualification, record the proposed change and open questions; mechanism selection remains a later decision. Once the boundary is approved, link the [intelligence selection record](intelligence-selection-record.md) for each retained consequential decision. Compare rules, optimization, classical ML, retrieval, a model, an agent, and human review where applicable.
+
+Use the [return-loop measurements](field-observation-log.md#return-loop-measurements) and the [fictional invoice redesign exercise](../examples/invoice-exception/engagement/README.md#optional-workflow-redesign-exercise) to check the proposal. Controls: `FDE-002`, `ARC-004`, `ARC-005`, `VAL-001`, `VAL-002`.
+
 ## Decision decomposition
 
 | Decision | Deterministic rule | Agent judgment | Human accountability | Required evidence | Postcondition |

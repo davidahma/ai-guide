@@ -4,8 +4,15 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+## [2.4.8] - 2026-10-01
+
+- Add a step-redesign table to the discovery pack and return-loop measurements to the observation log. Keep step necessity, proposed repair, retained controls, decision ownership, and later mechanism selection separate.
+- Extend the single worked invoice engagement with four fictional cases, checked return and timing measures, and an unimplemented upstream-repair proposal. Preserve its review-only decision; no customer outcome or savings are claimed.
+- Add a dated review of Varick's presentation and episode notes. Retain the changed-figure and composite-example labels, and keep vendor outcomes separate from target evidence. Refresh the qualification skill and local plugin snapshot.
+- Update local-plugin refresh instructions for the installed CLI. Treat unavailable official helper scripts and validators explicitly; retain repository checks, host installation, version verification, and fresh-process smoke tests.
 - Update the Markdown renderer and anchor plugin. Keep Mermaid on its tested major version because the v12 dependency tree currently reports high-severity advisories; retain the existing site diagram behavior.
-- Refresh the five-case invoice example under Node 24.20.0 and rebind its evaluation report, raw runner output, and review-only release to the changed dependency lock. No workflow, control, schema, or production claim changes.
+- Refresh the five-case invoice example under Node 24.20.0 and rebind its evaluation report, raw runner output, and review-only release to the changed dependency lock.
+- No new control, schema, lifecycle, runtime capability, or top-level template. Net file-count change: `library` 18 (0), top-level `templates` 37 (0), `blueprints` 12 (0), and `guide` 5 (0). The one new research note is owned by David Ahmann; merge it into the existing operational-redesign note if it no longer supports a distinct step-redesign decision.
 
 ## [2.4.7] - 2026-09-25
 

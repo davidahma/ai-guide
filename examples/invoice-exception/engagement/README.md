@@ -67,6 +67,34 @@ The [practice packet's R4 branch](../document-review/practice.md#round-5-a-narro
 
 That decision still retains reviewer approval, manual fallback, exact release binding, and stop conditions. It does not authorize automatic posting or establish target authentication, durable state, audit, long-run behavior, support cost, customer acceptance, or realized savings. The current worked engagement remains review-only and blocked from deployment; the alternate path exists to practice earning a narrow “yes” without turning it into a broader claim.
 
+## Optional workflow redesign exercise
+
+This fictional follow-on extends discovery with four domestic price-variance cases. The case IDs, reasons, and times below are invented teaching inputs. They do not describe case `1042` or customer results. This exercise is not part of the five executable regression cases. All four enter and complete within the same illustrative window; none is pending or excluded.
+
+Before the proposed change, a reviewer opens the case, checks the sources, asks for missing evidence or a correction, and reopens the case when it returns. Approval and posting remain separate. Handling minutes are the sum of active work; elapsed minutes run from queue entry to verified completion. Their difference includes waiting, but does not identify who caused it.
+
+| Case | Return reason | Return events | Handling minutes | Elapsed minutes |
+| --- | --- | ---: | ---: | ---: |
+| RX-1 | None; evidence complete | 0 | 8 | 20 |
+| RX-2 | Purchase-order revision missing; two repeat requests | 2 | 14 | 180 |
+| RX-3 | Invoice and purchase-order amounts conflict | 1 | 12 | 75 |
+| RX-4 | None; required approval is a forward handoff | 0 | 10 | 30 |
+
+Two cases return: `2 / 4 = 50%`. Three return events give `3 / 4 = 0.75` returns per entered case. First-pass completion is also `2 / 4 = 50%` in this fixture. Total handling is 44 minutes; total elapsed time is 305 minutes. These four invented cases do not establish a population rate. Human approval occurs on the normal path, so first-pass completion does not mean straight-through processing without human handling.
+
+The proposed change addresses RX-2's missing source before the correction reaches the reviewer:
+
+| Current work | Disposition and proposed change | Control retained / decision owner | Test before adoption |
+| --- | --- | --- | --- |
+| Reviewer discovers a missing purchase-order revision | Repair: check source presence and freshness at entry; route a held case to the source owner | No guessed revision; purchasing source owner and AP service owner | Missing or stale evidence stays held; a fresh revision permits renewed review |
+| Reviewer sends repeated requests and copies their status into a sheet | Combine: one tracked request in the existing queue; remove duplicate status entry if the owner approves | Keep assignment, reminders, history, and escalation; AP queue owner | No case loses its owner or escalation when the copied sheet entry is removed |
+| Reviewer resolves free-text explanations and conflicting amounts | Keep the decision; consider source retrieval and an optional model draft after mechanism comparison | Arithmetic and checks stay in code; unresolved conflicts go to finance | A plausible explanation cannot override a source mismatch |
+| Reviewer approves, posts, and checks the ledger | Keep separate approval and posting events, current authorization, and readback | Designated reviewer and finance controls manager | Stale approval, failed posting, or missing readback prevents completion |
+
+On the proposed normal path, current sources pass the entry checks, the system prepares a cited proposal, the designated reviewer approves, and authorized posting is verified by ledger readback. A missing revision stays in an owned holding queue. Conflicting amounts go to finance for resolution. Moving the wait earlier does not remove it; measure all cases from the same entry event so the proposed queue cannot improve the reported rate by hiding difficult cases.
+
+Proposed-path results remain `unmeasured`. No reduction in cycle time, returns, or cost has been demonstrated, and no entry check or queue change is implemented by this exercise. The next decision is whether the source and service owners approve a bounded test with the same case eligibility, failure checks, reviewer capacity, and full-cost accounting. The canonical engagement remains a review-only shadow candidate.
+
 ## Optional decision-learning exercise
 
 In a **fictional follow-on review**, three reviewers reject a proposed correction for the same supplier. One says the purchase-order price is stale; another cites an amended contract; the third gives no reason. Those are three observations, not proof that the proposal rule is wrong or that every invoice from the supplier needs a new rule. The owner would inspect source revisions and eligible cases, ask the reviewers about the disagreement, and compare outcomes with counterexamples. The disposition might be to repair source freshness, clarify review guidance, retain a manual exception, or test a revised rule. Any revision needs its own evaluation and release approval. This exercise is not part of the five passing fixture cases and supplies no customer outcome evidence. [R26-91](../../../research/2026-09-23--decision-models-and-decision-learning.md#r26-91)

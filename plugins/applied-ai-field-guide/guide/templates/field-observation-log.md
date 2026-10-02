@@ -42,6 +42,16 @@
 
 Record a source and denominator for every consequential measure. Timestamp intervals show elapsed time between recorded events; they do not prove active handling time. A missing event can be work in a spreadsheet, mailbox, meeting, or uninstrumented system. Mark that gap `unknown` and validate it with a paired walkthrough or inspected artifact before using it to support a redesign or value claim.
 
+## Return-loop measurements
+
+Record a return when a case goes back to an earlier step for more work. A required forward handoff or ordinary approval is not a return. Link the reason to evidence; a reported reason alone does not establish the cause.
+
+| From step → earlier step | Case IDs / source revision | Reason and evidence class | Distinct cases affected | Return events, including repeats | Eligible entry cohort and window | Handling / waiting evidence | Owner and upstream repair to test |
+| --- | --- | --- | ---: | ---: | --- | --- | --- |
+| — | — | — | — | — | — | — | — |
+
+Keep cases affected and return events separate: one case can return twice. Define first-pass completion as cases completed without returning to an earlier step divided by the eligible entry cohort. Report pending, rejected, and excluded cases separately, with the same window and eligibility rules before and after a change. If measuring straight-through processing, state whether any human handling disqualifies a case; retained approval must stay visible. Check correctness, control failures, reviewer effort, and full cost alongside speed.
+
 ## Findings and follow-up
 
 | Finding or assumption | Claim class | Supporting evidence | Contradicting evidence | Owner | Next validation |

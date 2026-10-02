@@ -128,6 +128,8 @@ System logs quantify recorded events. A timestamp gap can show elapsed time betw
 
 This checkpoint supports a limited, testable redesign hypothesis. It does not establish population-wide process quality, authorize a change, or settle a policy or ownership dispute. When a missing answer could materially change the boundary, ask that next question before choosing a mechanism.
 
+For that hypothesis, use the [workflow step redesign table](../templates/discovery-pack.md#workflow-step-redesign). Record why each consequential step exists, whether to keep, remove, combine, or repair it, and which owner and controls remain. Check whether a return loop comes from an upstream defect before automating the repeated work. The [invoice redesign exercise](../examples/invoice-exception/engagement/README.md#optional-workflow-redesign-exercise) shows this decision with separate handling time, elapsed time, affected cases, and return events. [R26-92](../research/2026-10-01--workflow-step-redesign.md#r26-92)
+
 ### Check the technical reality directly
 
 Before assigning a readiness score or proposing an architecture, inspect enough of the target environment to test the workflow story. The relevant evidence depends on the boundary, but it commonly includes:

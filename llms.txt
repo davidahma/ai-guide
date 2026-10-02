@@ -27,6 +27,7 @@ Read [AGENTS.md](AGENTS.md) before modifying this repository.
 - Applied AI delivery and operating model: [library/10-applied-ai-delivery-and-operating-model.md](library/10-applied-ai-delivery-and-operating-model.md)
 - Discovery and value: [playbooks/01-discovery-and-value.md](playbooks/01-discovery-and-value.md)
 - First workflow investigation: [Discovery and Value](playbooks/01-discovery-and-value.md#run-a-first-workflow-investigation)
+- Step redesign and return-loop exercise: [Discovery pack](templates/discovery-pack.md#workflow-step-redesign), then [fictional invoice cases](examples/invoice-exception/engagement/README.md#optional-workflow-redesign-exercise)
 - Results walkthrough: [templates/results-walkthrough.md](templates/results-walkthrough.md)
 - Twelve-factor AI value framework: [library/14-twelve-factors-ai-value-engineering.md](library/14-twelve-factors-ai-value-engineering.md)
 - Portable AI value assessment: [guide/ai-value-engineering-scorecard.md](guide/ai-value-engineering-scorecard.md)

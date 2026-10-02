@@ -37,6 +37,47 @@ async function json(relativePath) {
   return JSON.parse(await readFile(path.join(root, relativePath), "utf8"));
 }
 
+test("workflow redesign keeps necessity, authority, and mechanism selection separate", async () => {
+  const discovery = await readFile(path.join(root, "templates/discovery-pack.md"), "utf8");
+  const section = discovery.split("## Workflow step redesign\n")[1]?.split("\n## ")[0];
+  assert.ok(section, "the existing discovery pack needs a reviewable redesign section");
+  for (const field of ["Why it exists", "Evidence and limitation", "Keep / remove / combine / repair", "Retained control", "Decision owner"]) {
+    assert.ok(section.includes(field), field);
+  }
+  assert.match(section, /intelligence-selection-record\.md/);
+  assert.match(section, /permission to remove a policy-required control/i);
+  assert.match(section, /mechanism selection remains a later decision/i);
+
+  const qualification = await readFile(path.join(root, ".agents/skills/qualify-ai-workflow/SKILL.md"), "utf8");
+  assert.match(qualification, /discovery-pack\.md#workflow-step-redesign/);
+  assert.match(qualification, /Do not select a model, framework, or agent topology/);
+});
+
+test("the redesign exercise distinguishes affected cases, return events, and unmeasured outcomes", async () => {
+  const body = await readFile(path.join(root, "examples/invoice-exception/engagement/README.md"), "utf8");
+  const section = body.split("## Optional workflow redesign exercise\n")[1]?.split("\n## ")[0];
+  assert.ok(section, "extend the existing engagement rather than add another case chain");
+  const rows = section.split("\n").filter((line) => line.startsWith("| RX-"))
+    .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()));
+  assert.equal(rows.length, 4);
+  const returns = rows.map((row) => Number(row[2]));
+  const handling = rows.map((row) => Number(row[3]));
+  const elapsed = rows.map((row) => Number(row[4]));
+  assert.ok(returns.every((value) => Number.isInteger(value) && value >= 0));
+  assert.ok(elapsed.every((value, index) => value >= handling[index]));
+  assert.equal(returns.reduce((sum, value) => sum + value, 0), 3);
+  assert.equal(returns.filter((value) => value > 0).length, 2);
+  assert.equal(handling.reduce((sum, value) => sum + value, 0), 44);
+  assert.equal(elapsed.reduce((sum, value) => sum + value, 0), 305);
+  assert.match(section, /2 \/ 4 = 50%/);
+  assert.match(section, /3 \/ 4 = 0\.75/);
+  assert.match(section, /fictional follow-on/i);
+  assert.match(section, /not part of the five executable regression cases/i);
+  assert.match(section, /Proposed-path results remain `unmeasured`/);
+  assert.match(section, /approval and posting remain separate/i);
+  assert.match(section, /No reduction in cycle time, returns, or cost has been demonstrated/);
+});
+
 test("the shared handbook requires a reframe only for a material contradiction", async () => {
   const handbook = await readFile(path.join(root, "playbooks", "README.md"), "utf8");
   const stage = handbook.split("\n").find((line) => line.startsWith("| Understand and reframe if needed |"));

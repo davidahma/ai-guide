@@ -48,7 +48,7 @@ Use the [12 Factors](library/14-twelve-factors-ai-value-engineering.md) and [one
 
 Try the [invoice practice packet](examples/invoice-exception/document-review/practice.md): a messy brief, difficult documents and review rubric. Its [runnable lab](examples/invoice-exception/document-review/README.md) compares rules with optional model proposals.
 
-The [invoice-exception engagement](examples/invoice-exception/engagement/README.md) follows a sold promise that field evidence kills: reframe, economics, controlled-write [runtime](examples/invoice-exception/reference-loop.mjs), retrieval comparison, restart-safe recovery practice, evaluation, blocked handoff, and review-only decision.
+The [invoice-exception engagement](examples/invoice-exception/engagement/README.md) follows a contradicted brief through reframing, economics, controlled-write [runtime](examples/invoice-exception/reference-loop.mjs), retrieval, recovery, evaluation, and a review-only decision. Its [redesign exercise](examples/invoice-exception/engagement/README.md#optional-workflow-redesign-exercise) compares upstream repair with repeated review.
 
 The [shipment-risk example](examples/shipment-risk-triage/README.md) combines classical ML, deterministic routing, optional model explanation, and human review.
 
