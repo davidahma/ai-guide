@@ -67,6 +67,47 @@ test("working value artifacts carry residual loss without double counting avoide
   assert.match(valueControl.requirement, /not counted twice/i);
 });
 
+test("value planning and service review distinguish released capacity from monetary benefit", async () => {
+  const valueCase = await readFile(path.join(root, "templates", "value-case.md"), "utf8");
+  const section = valueCase.split("## Benefit realization")[1]?.split("\n## ")[0] ?? "";
+  for (const category of ["Reduced expenditure", "Avoided cost", "Additional accepted work", "Available capacity"]) {
+    assert.ok(section.includes(category), `benefit realization omits ${category}`);
+  }
+  for (const term of ["Evidence status", "Overlap", "Owner", "review", "forecast", "non-cash"]) {
+    assert.match(section, new RegExp(term, "i"), `benefit realization omits ${term}`);
+  }
+  assert.match(section, /same released time/i);
+  assert.match(section, /value_per_accepted_outcome/);
+  const review = await readFile(path.join(root, "templates", "production-service-review.md"), "utf8");
+  assert.match(review, /value-case\.md#benefit-realization/);
+});
+
+test("operating-model hypotheses retain bounded evidence, human decisions, and target change gates", async () => {
+  const portfolio = await readFile(path.join(root, "templates", "workflow-portfolio-review.md"), "utf8");
+  const section = portfolio.split("## Operating-model hypotheses")[1]?.split("\n## ")[0] ?? "";
+  for (const term of ["Hypothesis", "Expected observation", "counter-evidence", "Scope", "owner", "decision", "review date"]) {
+    assert.match(section, new RegExp(term, "i"), `hypothesis review omits ${term}`);
+  }
+  assert.match(section, /one workflow/i);
+  assert.match(section, /approval/i);
+  assert.match(section, /change-management\.md/);
+  assert.match(section, /OPS-007/);
+});
+
+test("coordinated redesign requires a demonstrated constraint and staged change rather than a maturity label", async () => {
+  const synthesis = await readFile(path.join(root, "library", "10-applied-ai-delivery-and-operating-model.md"), "utf8");
+  const section = synthesis.split("## When incremental improvement is not enough")[1]?.split("\n## ")[0] ?? "";
+  for (const trigger of ["Untenable risk", "Proven platform constraint", "Fragmentation cost", "Coordinated redesign"]) {
+    assert.ok(section.includes(trigger), `redesign guidance omits ${trigger}`);
+  }
+  for (const term of ["alternatives", "transition cost", "staged", "rollback", "architecture-decision-record", "OPS-007"]) {
+    assert.match(section, new RegExp(term, "i"), `redesign guidance omits ${term}`);
+  }
+  assert.match(section, /does not authorize/i);
+  const operations = await readFile(path.join(root, "playbooks", "03-operate-and-scale.md"), "utf8");
+  assert.match(operations, /workflow-portfolio-review\.md#operating-model-hypotheses/);
+});
+
 test("engagement, service, and portfolio artifacts keep value, continuation, capacity, and reuse distinct", async () => {
   const [delivery, service, portfolio, learning, operations, synthesis, catalogText] = await Promise.all([
     readFile(path.join(root, "templates", "delivery-and-adoption-plan.md"), "utf8"),

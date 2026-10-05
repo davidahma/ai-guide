@@ -42,6 +42,8 @@ Do not use prompt count, token volume, model calls, lines of generated code, or 
 
 Use a counterfactual that fits the workflow: a comparison population, before/after analysis with known confounders, time-series intervention, reconciliation, or an owner-approved proxy. State what the method cannot establish. A pilot result is evidence for the pilot segment, not automatically annual realized value.
 
+Use the [benefit-realization table](../templates/value-case.md#benefit-realization) to distinguish reduced expenditure, evidenced avoided cost, additional accepted work, and available capacity. Subtract new review and recovery work from time released, name its observed use, and exclude overlapping benefit claims. `VAL-002`.
+
 ## Make cost a design constraint
 
 Use **AI unit economics**, not “tokenomics.” The relevant cost is the full cost of producing an accepted outcome:

@@ -40,6 +40,24 @@ A small review sample helps find what to investigate. It does not establish sour
 
 The model never calculates a figure, selects a threshold, invents an explanation, changes a forecast, or sends the report. Calculations and policy decisions stay deterministic. The reviewer sees the source revisions, structured explanation, uncertainty, and exception state beside the draft.
 
+## When the query runs and the total is wrong
+
+The [data-analysis blueprint](../../blueprints/data-analysis-agent.md) already covers join explosion. In this fictional fixture's approved source `orders-report-v1`, order `ord-101` has a total of 10000 cents at one row per order. Its three lines contain 2000, 3000, and 5000 cents. The fixture defines the total as the sum of these complete line amounts, with no tax, discount, or status adjustment.
+
+Joining the order to its lines returns these rows:
+
+| order_id | line_id | order_total_cents | line_amount_cents |
+| --- | --- | --- | --- |
+| ord-101 | line-101-1 | 10000 | 2000 |
+| ord-101 | line-101-2 | 10000 | 3000 |
+| ord-101 | line-101-3 | 10000 | 5000 |
+
+The query executes successfully. Summing `order_total_cents` across the joined rows yields `10000 + 10000 + 10000 = 30000` cents, while the approved one-row-per-order source reports 10000 cents. The eligible population still contains one order; three joined rows do not create three orders.
+
+Calculate the parent total at the declared order grain, retaining each `order_id` once, then sum the parent amounts: `10000` cents. Summing the child amounts also gives `2000 + 3000 + 5000 = 10000` cents for this fixture, but that route requires confirmed line completeness and matching metric semantics. `SUM(DISTINCT order_total_cents)` is not a repair: two different orders can legitimately have the same total, and amount-level deduplication would discard one.
+
+Compare the corrected result with the approved one-row-per-order report at the same source revision, population, currency, and time scope. Withhold the commentary while the totals disagree. Record the grain, keys, join cardinality, aggregation rule, and source authority in the [data-readiness assessment](../../templates/data-readiness-assessment.md) (`CTX-006`, `CTX-007`, `CTX-008`). These fictional rows supply no customer or production evidence.
+
 ## Review packet
 
 For each variance, show:
@@ -59,6 +77,7 @@ Use representative historical records only where access and retention permit. Ho
 | --- | --- |
 | Actuals and plan reconcile; explanation is supported | Present a proposal with exact source references for reviewer decision |
 | Actuals do not reconcile | Withhold the draft and flag the mismatch |
+| Query succeeds but a parent-to-child join double-counts the total | Withhold the draft; correct the grain or confirmed child aggregation and reconcile to the approved source before resuming |
 | Plan version is missing or stale | Withhold the draft and request the approved source |
 | Explanation is absent, late, or conflicts with the evidence | Mark it unresolved; do not invent a narrative |
 | Amount is below policy materiality | Apply the deterministic route and retain the policy reason |

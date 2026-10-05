@@ -26,6 +26,17 @@ test("search reaches canonical uncataloged chapters and canonical validation is 
   assert.ok(referral.results.some((item) => item.path === "examples/service-referral/README.md" && item.artifact_id === "example.service-referral"));
   const redesign = await call("guide_search", { query: "Workflow step redesign", limit: 10 });
   assert.ok(redesign.results.some((item) => item.path === "templates/discovery-pack.md" && item.section === "Workflow step redesign"), JSON.stringify(redesign));
+  for (const [query, expectedPath, expectedSection] of [
+    ["Operating-model hypotheses", "templates/workflow-portfolio-review.md", "Operating-model hypotheses"],
+    ["Benefit realization", "templates/value-case.md", "Benefit realization"],
+    ["When incremental improvement is not enough", "library/10-applied-ai-delivery-and-operating-model.md", "When incremental improvement is not enough"],
+    ["Semantic layer Ontology Knowledge graph Context assembly", "library/02-context-and-knowledge-systems.md", "Structured data"],
+    ["When the query runs and the total is wrong", "examples/finance-variance-commentary/README.md", "When the query runs and the total is wrong"],
+    ["Analytics semantics and result evaluation", "research/2026-10-04--analytics-semantics-and-evaluation.md", "Analytics semantics and result evaluation"],
+  ]) {
+    const found = await call("guide_search", { query, limit: 10 });
+    assert.ok(found.results.some((item) => item.path === expectedPath && item.section === expectedSection), JSON.stringify(found));
+  }
   const paths = await guidancePaths(root);
   assert.equal(paths.filter((item) => item.startsWith("library/")).length, 18);
   assert.equal(paths.some((item) => item.startsWith("plugins/")), false);

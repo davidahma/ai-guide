@@ -4,6 +4,15 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+- Distinguish semantic layers, ontologies, knowledge graphs, and context assembly in the existing context guidance, without requiring four services or a graph platform.
+- Clarify analytical metric definitions, valid aggregation and joins, applicable reporting-calendar and currency rules, and held-out executed-result evaluation. Extend the existing finance walkthrough with a checked fictional join-total error; no new executable lab or customer outcome is claimed.
+- Add a dated review of dbt, Snowflake, and DataHub documentation, keeping product behavior separate from independently verified correctness.
+- Add evidence-to-decision rows for operating-model hypotheses to the existing workflow portfolio review, with bounded claims and separate owner approval for organizational changes.
+- Clarify when demonstrated risk, platform constraints, fragmentation cost, or coordinated dependencies justify investigating wider redesign. Preserve alternatives, staged releases, transition costs, recovery, and target gates.
+- Add a benefit-realization table to the value case and link it from value and service-review guidance. Separate reduced expenditure, avoided cost, additional accepted work, and non-cash capacity; exclude overlapping benefits.
+- Prepare local development version `2.4.10` for the supported installed-plugin refresh. Keep these changes unreleased and refresh the teaching-evaluation bindings to the changed package metadata.
+- No new control, schema, framework, case study, or runtime capability. Net file-count change: `library` 18 (0), top-level `templates` 37 (0), `blueprints` 12 (0), and `guide` 5 (0). David Ahmann owns the new analytics research note; merge it into the context source ledger if it no longer supports a distinct analytics decision.
+
 ## [2.4.8] - 2026-10-01
 
 - Add a step-redesign table to the discovery pack and return-loop measurements to the observation log. Keep step necessity, proposed repair, retained controls, decision ownership, and later mechanism selection separate.

@@ -165,3 +165,61 @@ test("derived business state stays source-bound, revisable, and decision-scoped"
   assert.match(graph, /does not overwrite raw evidence or establish source truth/i);
   assert.match(changes, /candidate-versus-current derived-state review/i);
 });
+
+test("analytics guidance separates context responsibilities and evaluates result semantics", async () => {
+  const [context, analysis, evidence, catalog] = await Promise.all([
+    readText("library/02-context-and-knowledge-systems.md"),
+    readText("blueprints/data-analysis-agent.md"),
+    readText("research/2026-10-04--analytics-semantics-and-evaluation.md"),
+    readJson("catalog.json"),
+  ]);
+  for (const concept of ["Semantic layer", "Ontology", "Knowledge graph", "Context assembly"]) {
+    assert.ok(context.includes(`| ${concept} |`), `missing responsibility: ${concept}`);
+  }
+  assert.match(context, /without four separate services/);
+  assert.match(context, /distinguish purposes and authority/);
+  for (const term of ["formulas", "null treatment", "join cardinality", "valid rollups", "FX source", "rounding"]) {
+    assert.ok(analysis.includes(term), `missing analytical contract: ${term}`);
+  }
+  assert.match(analysis, /held-out question\/query pairs/);
+  assert.match(analysis, /independently verified reference results/);
+  assert.match(analysis, /fixed absolute time windows/);
+  assert.match(analysis, /same frozen source snapshots/);
+  assert.match(analysis, /rather than SQL text alone/);
+  assert.match(analysis, /outside runtime context and the agent write boundary/);
+  assert.match(analysis, /metric-definition change without a table or column change/);
+  assert.match(evidence, /<a id="r26-93"><\/a>/);
+  assert.match(evidence, /not independent accuracy studies/);
+  assert.equal(catalog.artifacts.find(({ id }) => id === "evidence.analytics-semantics-evaluation")?.path,
+    "research/2026-10-04--analytics-semantics-and-evaluation.md");
+});
+
+test("the fictional finance join fixture demonstrates inflation without claiming production proof", async () => {
+  const finance = await readText("examples/finance-variance-commentary/README.md");
+  const section = finance.split("## When the query runs and the total is wrong\n")[1]?.split("\n## Review packet")[0];
+  assert.ok(section, "missing bounded join-total walkthrough");
+  const rows = [...section.matchAll(/^\| (ord-\d+) \| (line-[\d-]+) \| (\d+) \| (\d+) \|$/gm)]
+    .map(([, order, line, parent, child]) => ({ order, line, parent: Number(parent), child: Number(child) }));
+  assert.equal(rows.length, 3);
+  assert.equal(new Set(rows.map(({ line }) => line)).size, rows.length);
+  assert.equal(new Set(rows.map(({ order }) => order)).size, 1);
+  assert.equal(rows.reduce((sum, { parent }) => sum + parent, 0), 30000);
+  const parents = new Map();
+  for (const { order, parent } of rows) {
+    assert.equal(parents.get(order) ?? parent, parent, "conflicting parent amount");
+    parents.set(order, parent);
+  }
+  const correct = [...parents.values()].reduce((sum, amount) => sum + amount, 0);
+  assert.equal(correct, 10000);
+  assert.equal(rows.reduce((sum, { child }) => sum + child, 0), correct);
+  // Equal amounts on distinct orders show why amount-level DISTINCT loses valid records.
+  const equalOrders = [{ id: "ord-201", amount: correct }, { id: "ord-202", amount: correct }];
+  assert.equal(new Set(equalOrders.map(({ id }) => id)).size, 2);
+  assert.equal(equalOrders.reduce((sum, { amount }) => sum + amount, 0), 20000);
+  assert.equal([...new Set(equalOrders.map(({ amount }) => amount))].reduce((sum, amount) => sum + amount, 0), 10000);
+  assert.match(section, /SUM\(DISTINCT order_total_cents\).*not a repair/);
+  assert.match(section, /confirmed line completeness and matching metric semantics/);
+  assert.match(section, /same source revision, population, currency, and time scope/);
+  assert.match(section, /Withhold the commentary while the totals disagree/);
+  assert.match(section, /fictional rows supply no customer or production evidence/);
+});

@@ -57,6 +57,8 @@ This readout is a projection, not a new source of truth, approval, or acceptance
 
 Explain attribution, non-adoption, downstream rework, avoided loss evidence, realized residual loss, fixed cost, and any rebaseline. Deduct residual loss separately only when it is not already netted from avoided loss or unit value.
 
+Reconcile the [benefit-realization rows](value-case.md#benefit-realization) with this review period. State how released time was used and which expenditure, avoided-cost, or additional-work claims the evidence supports. Report available capacity separately from monetary benefits, and retain forecasts and overlap exclusions. `VAL-002`.
+
 When outcomes are delayed, record the observation window, evidence cutoff, pending count and age, producing offer or behavior version, and late-event corrections. Keep the earlier as-of result inspectable. Separate activity, payment, delivery, acceptance, and downstream benefit where they are different events; missing observations remain unknown. See the [service-referral case](../examples/service-referral/README.md). `EVA-006`, `OPS-001`.
 
 ### Agent-work cost drivers when applicable

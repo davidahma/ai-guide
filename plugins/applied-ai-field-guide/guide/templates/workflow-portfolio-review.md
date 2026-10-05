@@ -37,6 +37,18 @@ Centralize reusable rails where they reduce repeated work; keep outcome, source,
 
 An unowned row is a capability gap, not a reason for the central AI or delivery team to absorb authority silently. Record the independent backup for consequential roles and the deadline for removing any temporary substitution. A building team that stays on belongs in the service or platform-owner rows with explicit operating capacity, not indefinitely in the temporary-delivery row. One person may hold the service and operational roles only when both assignments are explicit and required independent approvals remain separate.
 
+## Operating-model hypotheses
+
+Record the organizational assumption that a workflow is meant to test, if one applies. Examples include combining duplicate review queues, keeping approval with the domain owner, or sharing a governed reconciliation service. Preserve the initial hypothesis when evidence changes it.
+
+| Hypothesis and revision | Expected observation | Workflow evidence, period, and counter-evidence | Scope and limits | Affected owners | Decision, accountable owner, and review date |
+| --- | --- | --- | --- | --- | --- |
+| — | — | — | — | — | Keep / revise / reject / investigate further |
+
+Results from one workflow do not establish that the same change fits other teams. Inspect their policy, source semantics, exceptions, workload, and decision rights before extending the claim. Keep a changed hypothesis separate from approval to change roles, controls, systems, or funding; obtain the affected owners' decisions and follow [change management](../operations/change-management.md).
+
+For a constraint that spans workflows, use the [incremental-versus-redesign guidance](../library/10-applied-ai-delivery-and-operating-model.md#when-incremental-improvement-is-not-enough). Record the next bounded test or approved change rather than treating a successful deployment as permission to reorganize. `FDE-003`, `VAL-003`, `ADP-002`, `OPS-007`.
+
 ## Stage flow and pilot graduation
 
 | Workflow | Accountable owner | Current stage | Stage entered | Next gate and date | Graduation evidence | Blocker or stop reason |

@@ -2,7 +2,7 @@
 
 This folder holds dated evidence that supports the implementation library.
 
-**Repository source review:** The general source set was last rechecked 2026-08-10; the multi-agent topology note was reviewed 2026-08-14; the Bridgewater PAT field report was reviewed 2026-08-27; Uber's production AI operating reports and Warp's software-factory improvement article were reviewed 2026-08-28; the healthcare-claims context, agentic operating-maturity, and FDE interaction-workflow evidence were reviewed 2026-08-30; the operational-redesign plus workflow-proof and deployment-qualification evidence was reviewed 2026-09-03; decision-model, multi-turn evaluation, and reasoned-override sources were reviewed 2026-09-23; and Varick's step-redesign presentation and episode notes were reviewed 2026-10-01. Link reachability, first-party publication, or a research preprint does not establish general validity; every implementation pattern still requires local evaluation.
+**Repository source review:** The general source set was last rechecked 2026-08-10; the multi-agent topology note was reviewed 2026-08-14; the Bridgewater PAT field report was reviewed 2026-08-27; Uber's production AI operating reports and Warp's software-factory improvement article were reviewed 2026-08-28; the healthcare-claims context, agentic operating-maturity, and FDE interaction-workflow evidence were reviewed 2026-08-30; the operational-redesign plus workflow-proof and deployment-qualification evidence was reviewed 2026-09-03; decision-model, multi-turn evaluation, and reasoned-override sources were reviewed 2026-09-23; Varick's step-redesign presentation and episode notes were reviewed 2026-10-01; and analytics semantics and result-evaluation documentation was reviewed 2026-10-04. Link reachability, first-party publication, or a research preprint does not establish general validity; every implementation pattern still requires local evaluation.
 
 ## How sources are admitted
 
@@ -17,6 +17,7 @@ Social, Reddit, YouTube, and news are research channels—not automatic authorit
 
 ## Current research sets
 
+- [Analytics semantics and result evaluation](2026-10-04--analytics-semantics-and-evaluation.md) — first-party join, query-evaluation, and context-ingestion documentation; precise metric contracts and held-out result checks, without a mandatory graph stack or product accuracy claim.
 - [Workflow step redesign](2026-10-01--workflow-step-redesign.md) — inspected Varick presentation and episode notes; step necessity, upstream repair, and return-loop measures, with changed figures, composite examples, and unverified outcomes kept explicit.
 - [Decision models, failure localization, and decision learning](2026-09-23--decision-models-and-decision-learning.md) — bounded Jev and judge evidence, first-divergence diagnosis, and UiPath's vendor account of reasoned overrides; no model default, universal map, or automatic policy learning.
 - [BugBasher business experiment](2026-09-17--bugbasher-business-experiment.md) — supplied practitioner lead for blocked dependencies, delayed outcomes, approval routes, and behavioral changes; publication details and results remain unverified, with a separate fictional service-referral exercise.

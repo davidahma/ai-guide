@@ -72,6 +72,23 @@ payback_months =
 
 Do not calculate payback when steady-state monthly net value is zero or negative. Avoided loss is a measured reduction from the baseline; subtract residual loss separately only when it represents harm not already netted from avoided loss or unit value. For one loss class, use either gross exposure minus residual loss or net avoided loss—never both. If residual loss is unmeasured, keep it `null`, lower confidence, and do not claim a complete net-value result. Keep one-time, fixed, variable-system, and human-review/recovery costs mutually exclusive and state the currency, period, and allocation method.
 
+## Benefit realization
+
+Record what happens to released time after new review, exception, support, and recovery work is included. A shorter task can release capacity while payroll and output stay unchanged.
+
+| Benefit type | Evidence for the declared population and period | Monetary treatment |
+| --- | --- | --- |
+| Reduced expenditure | An attributable reduction in paid overtime, contractor, vendor, or other expense, confirmed by the accountable owner | Count the observed reduction; keep future reductions as a forecast. |
+| Avoided cost | Demonstrated demand and a credible counterfactual spending plan, such as hiring that would otherwise have been needed | Keep planned avoidance as a forecast until the period and counterfactual support the claim. An unfilled vacancy alone does not prove savings. |
+| Additional accepted work | Incremental completed work with independent acceptance, demand, attribution, and value evidence | Use incremental contribution or another owner-approved unit value; do not substitute gross revenue for contribution. |
+| Available capacity | Measured net time released, its owner, and its intended and observed use | Report hours as a non-cash operating result. Unused time or time multiplied by salary alone does not establish a monetary benefit. |
+
+| Benefit ID and type | Baseline / counterfactual | Intended and observed use | Amount or hours, currency, and period | Evidence status and source | Owner and verifier | Overlap exclusion and value-model term |
+| --- | --- | --- | --- | --- | --- | --- |
+| — | — | — | — | Unmeasured / estimated / measured | — | — |
+
+Do not count the same released time as both labor savings and additional output. Separate distinct benefits with their evidence and exclusions, including costs already accounted for in the cost comparison. Map monetary rows into `value_per_accepted_outcome` or the applicable avoided-loss term once; do not add a second benefit total to the equation above. Where a benefit does not fit the equation, document an owner-approved economic model and reconcile it with the charter rather than forcing it into accepted-outcome uplift or avoided loss. Keep capacity hours separate, and label annualized projections as estimates when the full period has not been observed. `VAL-002`.
+
 ## Evidence gates
 
 | Gate | Evidence | Threshold | Owner | Status |

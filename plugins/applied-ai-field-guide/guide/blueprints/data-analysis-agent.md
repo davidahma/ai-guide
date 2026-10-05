@@ -41,14 +41,16 @@ Trust boundaries:
 | Field | Requirement |
 | --- | --- |
 | Decision | The business decision the analysis must support |
-| Population | Eligible entities and explicit denominator |
-| Metrics | Catalog IDs, owners, versions, units, aggregation, and guardrails |
-| Time | Event time, processing time, timezone, snapshot/as-of rule |
-| Segments | Permitted dimensions and minimum cohort sizes |
+| Population | Eligible entities, unit of analysis, keys, and explicit denominator |
+| Metrics | Catalog IDs, owners, definition versions, formulas, filters, null treatment, units, aggregation, and guardrails |
+| Time | Event time, processing time, timezone, absolute window, snapshot/as-of rule |
+| Segments | Permitted dimensions, valid rollups, and minimum cohort sizes |
 | Authority | Caller, tenant, row/column policy, purpose, expiry |
 | Budgets | Turns, queries, rows, bytes, scan cost, sandbox time, tokens, total cost |
 | Deliverable | Notebook, table, chart, memo, or review packet |
 | Acceptance | Deterministic checks plus named domain-review rubric |
+
+Aggregation depends on the measure and dimension. Balances may add across accounts at one snapshot but not across dates; ratios usually need recalculation from their numerator and denominator. The metric contract SHOULD state additive and non-additive dimensions, valid rollups, join cardinality, and any pre-aggregation or deduplication needed to preserve grain. Where applicable, it SHOULD bind the fiscal calendar, closed-period or restatement policy, currency, FX source and rate date, and rounding stage and precision (`CTX-006`, `CTX-008`). [R26-93](../research/2026-10-04--analytics-semantics-and-evaluation.md#r26-93)
 
 ### Institutional method context
 
@@ -106,7 +108,7 @@ Each state transition persists input/output digests and a terminal reason. Itera
 
 | Layer | Deterministic checks | Judgment checks |
 | --- | --- | --- |
-| Semantics | Metric/version exists; unit and aggregation match | Metric is appropriate for the decision |
+| Semantics | Definition version, formula, filters, null handling, unit, time scope, and valid rollup match | Metric is appropriate for the decision |
 | Data | Schema, freshness, nulls, duplicates, join cardinality, denominator | Missingness and bias materially affect interpretation |
 | Query/code | AST policy, execution, resource limits, reproducible digest | Method is proportionate and assumptions are defensible |
 | Result | Reconciliation, totals, invariants, sensitivity bounds | Conclusions follow from the evidence |
@@ -123,10 +125,15 @@ Required slices:
 - ambiguous metric, competing definitions, and missing denominator;
 - stale snapshot, late-arriving data, policy drift, and schema drift;
 - join explosion, duplicate rows, null-heavy cohorts, Simpson's paradox, and tiny segments;
+- valid SQL that duplicates totals through a one-to-many join;
+- invalid rollups, such as summing balances across dates or taking an unweighted average of unequal-denominator ratios;
+- a metric-definition change without a table or column change;
 - unsupported causal claim, cherry-picked window, and uncertainty crossing the release threshold;
 - prompt injection in source text, notebook cells, labels, metadata, and prior artifacts;
 - row/column/tenant escape, oversized result, expensive query, export attempt, and credential request;
 - multi-session memory aging, corrected source data, invalidated conclusions, and evolving workspace state.
+
+Use held-out question/query pairs with independently verified reference results and expected-result authority recorded under `EVA-007`. Bind candidate and reference queries to fixed absolute time windows and the same frozen source snapshots; a relative window such as “last month” changes between runs. Compare executed-result semantics, including population, grain, units, totals, time/currency basis, and approved numeric tolerances, rather than SQL text alone. Keep reference queries and answers outside runtime context and the agent write boundary (`EVA-002`, `EVA-006`). [R26-93](../research/2026-10-04--analytics-semantics-and-evaluation.md#r26-93)
 
 Run the same workload over repeated trials and a multi-day simulated workspace. Record accepted outcome, reviewer corrections, claim-level precision, prohibited disclosure, query cost, cycle time, and cost per accepted analysis—not only execution success.
 
@@ -139,7 +146,7 @@ Run the same workload over repeated trials and a multi-day simulated workspace. 
 | Query denied | Preserve policy reason; revise within existing authority or escalate |
 | Resource budget | Return partial evidence and explicit unresolved work; no hidden sampling |
 | Reconciliation mismatch | Invalidate dependent claims and return to analysis execution |
-| Policy/source revision changes | Invalidate approval and rerun affected plans and checks |
+| Policy/source/metric-definition revision changes | Invalidate approval and rerun affected plans and checks |
 | Artifact render failure | Preserve verified claims; retry presentation only |
 | Reviewer rejection | Version a new candidate; preserve prior evidence and decision |
 

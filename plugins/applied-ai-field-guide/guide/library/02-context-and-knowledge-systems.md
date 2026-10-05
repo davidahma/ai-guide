@@ -52,6 +52,15 @@ Prefer syntax- or language-aware hierarchical chunks, incremental re-indexing of
 
 Agents need more than table access. A semantic layer should mark sources of truth, joins, metric definitions, grain, time semantics, and access rules. Replit attributes much of its self-service business analysis to such a layer. [S17]
 
+| Concept | Responsibility |
+| --- | --- |
+| Semantic layer | Defines metrics and their calculation rules, dimensions, grain, and valid joins |
+| Ontology | Describes domain types, relationships, and invariants; a constraint layer or trusted code enforces rejection |
+| Knowledge graph | Connects facts with provenance in stored, derived, or virtual views; graph structure alone establishes neither source truth nor action authority |
+| Context assembly | Selects and packages permitted, fresh, attributable evidence for one bounded decision |
+
+These responsibilities can coexist in SQL, catalogs, documents, or code without four separate services. The [four data-use planes](16-data-readiness-and-context-contracts.md#keep-four-planes-separate) distinguish purposes and authority, not these responsibilities. [R26-93]
+
 For qualitative research, Listen uses a **virtual table**: one row per interview and generated columns for features, classifications, or sentiment. This turns an unstructured corpus into a map-reduce style analysis surface while keeping row-level evidence reviewable. [S03]
 
 For domains with consequential business rules, an **ontology** can provide shared entities and relationships for executable checks—for example, who may receive a payout or whether an order has already been refunded. RDFS and OWL support machine-readable vocabularies and logical inference; they do not by themselves impose closed-world rejection on an application. Pair the ontology with a constraint layer such as SHACL shapes or deterministic rules to reject domain states or proposed actions that violate explicit invariants. This complements a warehouse semantic layer: the semantic layer explains how to query and interpret data, while the constraint layer enforces application policy. [S20] [R26-61]
@@ -206,3 +215,4 @@ Vary query specificity, source availability, freshness, and ambiguity to find wh
 [S17]: 05-source-index.md#s17
 [S20]: 05-source-index.md#s20
 [R26-61]: ../research/2026-02-07--2026-08-07-production-agent-source-ledger.md#r26-61
+[R26-93]: ../research/2026-10-04--analytics-semantics-and-evaluation.md#r26-93

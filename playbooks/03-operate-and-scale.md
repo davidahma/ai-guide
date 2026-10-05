@@ -93,6 +93,8 @@ Optional external contribution or renewal measures belong in the portfolio revie
 
 Before choosing `standardize`, inventory material workflow variants and classify them as policy-required, segment-specific, role-specific, system-constrained, or accidental dysfunction. Cluster only genuinely comparable workflows. Retain necessary local branches and repair accidental dysfunction before extracting a shared pattern; do not standardize a workaround merely because several teams use it.
 
+Review any [operating-model hypotheses](../templates/workflow-portfolio-review.md#operating-model-hypotheses) against the workflow results. Record what the evidence supports, contradicts, or leaves unknown about roles, handoffs, shared capability, and investment sequence. A revised hypothesis needs a scoped owner decision and target change gates before implementation.
+
 Direct resources to the first unresolved hard gate or binding constraint for each workflow. A readiness or maturity score may order investigation, but a portfolio average cannot compensate for missing authority, verifier, lawful data, safety, adoption, or service ownership. Any reused capability names its exact version and prior scope, records material differences, and still crosses the target workflow's policy, data, security, evaluation, release, adoption, support, and ownership gates.
 
 Controls: `FDE-003`, `FDE-004`, `VAL-002`, `VAL-003`, `ADP-002`, `OPS-004`, `CST-001`.

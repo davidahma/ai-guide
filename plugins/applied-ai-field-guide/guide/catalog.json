@@ -890,6 +890,12 @@
       "type": "evidence",
       "path": "research/2026-09-03--workflow-proof-and-deployment-qualification.md",
       "tags": ["sources", "proof", "evaluation", "human-review", "deployment"]
+    },
+    {
+      "id": "evidence.analytics-semantics-evaluation",
+      "type": "evidence",
+      "path": "research/2026-10-04--analytics-semantics-and-evaluation.md",
+      "tags": ["sources", "analytics", "semantic-layer", "context", "evaluation"]
     }
   ]
 }

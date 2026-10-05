@@ -47,6 +47,21 @@ Test that story against the target environment. Inspect the decision-bearing cod
 
 Interview assistants, voice capture, transcript extraction, prototype generation, and automated feedback summaries can reduce discovery friction. Treat them as experimental aids that stage claims for review. They do not replace observation, operator validation, conflict resolution, source authority, or the scoped human disposition required when evidence changes the brief.
 
+## When incremental improvement is not enough
+
+Improve the existing workflow when its sources, permissions, controls, and support path can sustain the change. Investigate a wider redesign when a demonstrated constraint cannot be resolved within that boundary:
+
+| Trigger | Evidence to investigate |
+| --- | --- |
+| Untenable risk | The accountable owner identifies a regulatory, security, resilience, or supportability risk that the current system cannot adequately contain. Record the unsafe condition and the interim containment decision. |
+| Proven platform constraint | Inspected interfaces, data models, or executions show the same constraint blocking several valuable workflows. Compare repair and integration alternatives before proposing replacement. |
+| Fragmentation cost | Duplicated platforms or controls cause measured recurring cost or risk. Compare them with transition cost, migration loss, ongoing support, and uncertainty over the same period. |
+| Coordinated redesign | Roles, handoffs, incentives, ownership, or technology must change together. Name the dependencies and explain why separate local changes would leave the constraint unresolved. |
+
+Use an [architecture decision record](../templates/architecture-decision-record.md) to compare a contained repair, a coordinated change, and deferral with safe containment where feasible. Record affected workflows, supporting and contrary evidence, transition cost, owners, acceptance checks, and the consequence of waiting. An AI-native ambition or maturity label does not authorize replacement or broader agent authority.
+
+Plan staged releases with verifiable outcomes, safe coexistence or cutover, rollback, and reconciliation of pending work. When an irreversible step prevents rollback, record the recovery path and obtain the required target approvals before taking it. Follow [change management](../operations/change-management.md); redesign does not waive the target workflow's data, policy, evaluation, release, adoption, or ownership gates. `FDE-003`, `VAL-003`, `ADP-002`, `OPS-007`.
+
 ## Build the applied product in three connected layers
 
 | Layer | What it contains | Design question |
