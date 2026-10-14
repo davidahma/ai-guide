@@ -62,6 +62,32 @@ test("explanation failure uses a deterministic evidence summary", async () => {
   assert.equal(state.reviewCases.length, 1);
 });
 
+test("a shape-valid explanation can omit facts while the staged case retains routing evidence", async () => {
+  const { state, deps } = createShipmentRiskWorld({
+    explanation: { summary: "Shipment has a carrier update.", evidence_refs: ["shipment:ship-100@shipment-r7"] },
+  });
+  const result = await runShipmentRiskTriage(input(), deps);
+  assert.equal(result.explanation.source, "foundation_model", "shape validation does not detect the omission");
+  assert.doesNotMatch(result.explanation.summary, /0\.91|review_required/);
+  assert.equal(result.route, "review_required");
+  const staged = state.reviewCases[0];
+  assert.equal(staged.risk_score, state.assessment.score);
+  assert.equal(staged.route, "review_required");
+  assert.equal(staged.evidence_revision, state.context.revision);
+  assert.equal(staged.model_version, state.assessment.model_version);
+  assert.equal(staged.routing_policy_version, result.policy_version);
+  assert.equal(state.reviewCases.length, 1);
+});
+
+test("missing decision-critical score escalates instead of treating absence as low risk", async () => {
+  const { state, deps } = createShipmentRiskWorld({ assessment: { score: undefined } });
+  const result = await runShipmentRiskTriage(input(), deps);
+  assert.equal(result.state, "escalated");
+  assert.equal(result.stop_reason, "RISK_SCORE_INVALID");
+  assert.equal(state.calls.some((call) => call.operation === "render_review_explanation"), false);
+  assert.equal(state.reviewCases.length, 0);
+});
+
 test("mismatched tenant is denied before shipment context disclosure", async () => {
   const { state, deps } = createShipmentRiskWorld();
   const result = await runShipmentRiskTriage(input({ tenant_id: "tenant-b", caller: caller({ tenant_id: "tenant-a" }) }), deps);

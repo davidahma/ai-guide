@@ -17,7 +17,7 @@ Choose intelligence route by route. An agent is an option, not the starting assu
 
 ## Workflow
 
-1. Decompose the workflow into consequential decision steps, evidence dependencies, actions, and fallback paths; record where the selected pattern or profile does not fit.
+1. Decompose the workflow into consequential decision steps, evidence dependencies, actions, and fallback paths; record where the selected pattern or profile does not fit. For each branch, name the required facts, selected mechanism and reason, typed output, next consumer, and failure check. Trace required facts through preparation using the [data-readiness assessment](../../guide/templates/data-readiness-assessment.md#decision-critical-evidence-through-preparation).
 2. Establish deterministic, single-call, and coded-workflow baselines before proposing model-directed agency.
 3. Compare rules, optimization, classical ML, retrieval, a foundation-model call, a bounded agent workflow, and human review where applicable. For each, state the required sources, quality, preparation, labels, context, and drift controls.
 4. Select the smallest mechanism that meets the accepted outcome, risk ceiling, latency, maintainability, and cost constraints.

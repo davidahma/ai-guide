@@ -20,6 +20,26 @@ const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 const validate = ajv.compile(schema);
 
+test("evidence-loss guidance connects preparation, paired cases, and downstream decisions", async () => {
+  const [context, evaluation, assessment, walkthrough] = await Promise.all([
+    readText("library/02-context-and-knowledge-systems.md"),
+    readText("library/09-evaluation-corpus-and-review-loops.md"),
+    readText("templates/data-readiness-assessment.md"),
+    readText("examples/shipment-risk-triage/README.md"),
+  ]);
+  assert.match(context, /## Check what survives context preparation/);
+  assert.match(context, /retained link alone is insufficient/i);
+  assert.match(evaluation, /## Test evidence lost between steps/);
+  for (const requirement of [/authoritative source/, /negative control/, /separate holdout/, /downstream result/]) {
+    assert.match(evaluation, requirement);
+  }
+  assert.match(assessment, /## Decision-critical evidence through preparation/);
+  assert.match(assessment, /do not widen permissions/);
+  assert.match(walkthrough, /## Follow the decision branches/);
+  assert.match(walkthrough, /well-shaped omissions are not detected/);
+  assert.match(walkthrough, /Outside the executable fixture/);
+});
+
 test("the canonical data-context manifest is structurally and semantically valid", () => {
   assert.equal(validate(manifest), true, JSON.stringify(validate.errors));
   assert.deepEqual(dataContextManifestSemanticErrors(manifest), []);

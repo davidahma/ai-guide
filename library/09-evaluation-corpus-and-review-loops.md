@@ -67,6 +67,21 @@ A global pass rate hides the failures that matter. Build a slice matrix before f
 
 Oversample rare, high-consequence conditions. For each required slice, set the evaluator type and a separate acceptance threshold; an average cannot compensate for a prohibited action or a high-value error.
 
+## Test evidence lost between steps
+
+Use paired cases to check whether extraction, ranking, summarization, or a handoff drops evidence that the next decision needs. Start from a source-bound case with an owner-approved expected result. In the paired case, remove or alter one decision-critical item in the derived packet while preserving the authoritative source. Keep the decision policy, remaining inputs, and evaluation conditions fixed. Repeat trials when the selected route is stochastic.
+
+| Change in the derived packet | What the verifier checks |
+| --- | --- |
+| Omit an exception or negation | The consumer recovers the permitted source, abstains, or escalates instead of treating silence as permission |
+| Drop a date, unit, currency, or population qualifier | The result retains the source meaning; an apparently valid number cannot pass under the wrong interpretation |
+| Remove conflicting evidence or uncertainty | The conflict remains unresolved until the declared owner or rule disposes it |
+| Leave only a citation to a required fact | The trace shows the consumer read the fact before deciding, or took the declared fallback |
+
+Record where the fact first disappeared, whether the next consumer received enough evidence, the downstream result, recovery and review cost, and the source and transformation revisions. Missing evidence can legitimately change a decision into an escalation; the test must not require the same final answer regardless of available information. A known bad decision made without required evidence should fail its verifier. Exercise that shortcut as a negative control, and keep a separate holdout for qualification. Controls: `CTX-007`, `EVA-001`, `EVA-006`.
+
+For a bounded local demonstration, see [the shipment walkthrough](../examples/shipment-risk-triage/README.md#follow-the-decision-branches). Its omission check shows that structured routing evidence survives a weak explanation; it does not validate the explanation's completeness or a reviewer's decision.
+
 ## Qualify the human-AI operating policy
 
 When deployment depends on routing work to people, qualify that complete operating policy—not the agent in isolation. Define workflow success, the eligible population, candidate policy class, routing signal, reviewer path, risk constraints, reliability target, and cost model before selection. Use development evidence to choose the policy, freeze it, then evaluate it on a disjoint qualification partition. A point estimate above target is not enough: the declared lower confidence bound must also clear the target under the stated sampling unit and dependence assumptions.

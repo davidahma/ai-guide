@@ -33,6 +33,9 @@ test("search reaches canonical uncataloged chapters and canonical validation is 
     ["Semantic layer Ontology Knowledge graph Context assembly", "library/02-context-and-knowledge-systems.md", "Structured data"],
     ["When the query runs and the total is wrong", "examples/finance-variance-commentary/README.md", "When the query runs and the total is wrong"],
     ["Analytics semantics and result evaluation", "research/2026-10-04--analytics-semantics-and-evaluation.md", "Analytics semantics and result evaluation"],
+    ["Check what survives context preparation", "library/02-context-and-knowledge-systems.md", "Check what survives context preparation"],
+    ["Test evidence lost between steps", "library/09-evaluation-corpus-and-review-loops.md", "Test evidence lost between steps"],
+    ["Follow the decision branches", "examples/shipment-risk-triage/README.md", "Follow the decision branches"],
   ]) {
     const found = await call("guide_search", { query, limit: 10 });
     assert.ok(found.results.some((item) => item.path === expectedPath && item.section === expectedSection), JSON.stringify(found));

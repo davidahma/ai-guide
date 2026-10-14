@@ -50,6 +50,16 @@ Check join cardinality, duplicate entities, correction latency, missing-not-at-r
 
 Include parsing, OCR, normalization, deduplication, entity resolution, redaction, chunking, indexing, joins, feature engineering, aggregation, and human adjudication when used. Preserve raw evidence and source references. Derived views may guide retrieval and review; they do not become source-of-truth policy.
 
+## Decision-critical evidence through preparation
+
+Trace the items that could change the decision across extraction, ranking, summarization, and handoff. Record source revisions, qualifications, dates, units, conflicts, and uncertainty as applicable.
+
+| Required fact or qualification | Source and revision | Transformation and version | Next consumer and decision | Carried in output or retrieved before use? | Omission or alteration case and expected fallback | Verifier, result, and owner |
+| --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |
+
+Compare a complete packet with a paired case that removes or alters one required item. Check the downstream decision and whether authorized recovery, abstention, or escalation occurs. A citation without a source read does not establish that the consumer received the fact. Keep access restrictions and the authoritative source unchanged; do not widen permissions to make the case pass. Link the [evaluation recipe](../library/09-evaluation-corpus-and-review-loops.md#test-evidence-lost-between-steps).
+
 ## Derived-state lifecycle
 
 For every stored field, relationship, score, or summary derived from operational records, documents, rules, or model output, retain the raw or authoritative source separately and record:

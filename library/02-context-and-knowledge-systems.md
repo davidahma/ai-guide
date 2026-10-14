@@ -149,6 +149,14 @@ Useful techniques include:
 
 The Build Hour notes report substantial speed and cost gains from prompt caching, programmatic tool batching, and compaction; those specific customer figures were not independently verified here. [S11]
 
+## Check what survives context preparation
+
+A summary can contain only correct sentences and still omit the fact that changes a decision. A supplier summary might retain price and delivery speed but drop that its certification expires before the planned delivery. Shortening the text has changed what the reviewer can decide safely.
+
+For each consequential decision, list the facts, qualifications, dates, units, conflicts, and uncertainty the next step needs. Trace them through extraction, ranking, summarization, and handoff. Keep each required item in the typed output or retrieve its permitted source before the next decision. A retained link alone is insufficient if that step never reads it. Preserve source revisions and distinguish an absent fact from a checked negative result.
+
+Use the [data-readiness assessment](../templates/data-readiness-assessment.md#decision-critical-evidence-through-preparation) to record these checks. Test a complete packet against a version with one decision-critical item removed or altered; check the downstream decision, abstention, or escalation as well as the intermediate text. Keep access restrictions intact when recovering evidence. The [evaluation recipe](09-evaluation-corpus-and-review-loops.md#test-evidence-lost-between-steps) separates these checks from summary fluency and token savings. Controls: `CTX-006`, `CTX-007`, `EVA-001`.
+
 ## Distinguish retrieval from truth
 
 A knowledge system can retrieve what an organization said without establishing that it was correct. This matters when moving from answering questions to taking actions.

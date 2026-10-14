@@ -59,6 +59,24 @@ flowchart LR
 
 The routing policy runs after the ML score and before any explanation. A failed or unsafe explanation falls back to a deterministic evidence summary; it cannot block an otherwise required review. Controls: `ARC-002`, `ARC-004`, `ARC-005`, `FDE-001`, `TOL-001`, `VAL-002`.
 
+## Follow the decision branches
+
+Read each row as a decision with an evidence requirement and a fallback. The fixture supplies a hand-declared risk score; it does not train or compare predictive models.
+
+| Step and branch | Required evidence | Mechanism and reason | Output and next consumer | Failure behavior and local check |
+| --- | --- | --- | --- | --- |
+| Read shipment context | Caller tenant and read scope; matching shipment, value, status, revision, and observation time | Typed source read plus deterministic validation because these checks have explicit rules | Validated context goes to the score provider | Deny before disclosure for a tenant mismatch; escalate stale evidence before scoring |
+| Validate risk assessment | Finite score between 0 and 1, model version, matching evidence revision, and observation time | Deterministic contract around the supplied prediction | Valid assessment goes to routing policy | Escalate invalid or stale assessments; no review case is staged |
+| Choose the review branch | Score, shipment value, and policy thresholds | Deterministic rule; the pilot does not choose an intervention plan | Both thresholds met: `review_required`; otherwise `no_action` | The low-risk test confirms explanation and staging are skipped; `no_action` means no case from this workflow, not proof a shipment is safe |
+| Check budget and staging permission | Recorded cost and caller staging scope | Deterministic checks before optional explanation or case creation | Permitted, within-budget review goes to explanation | Escalate exhausted budget or deny missing staging scope; the fixture does not establish an all-in production spend cap |
+| Explain the selected route | Structured context, assessment, route, and evidence references | Optional model interpretation for readable review text; it cannot select the route | Typed explanation accompanies the case; structured score and evidence revision travel separately | Exceptions or invalid shape use a deterministic summary; well-shaped omissions are not detected by the current explanation validator |
+| Stage the review case | Shipment and evidence revisions, policy and model versions, operation ID, route, score, and digest | Deterministic case service for a non-binding work item | Receipt returns `review_ready` for a coordinator | Repeated operation reuses the fixture's case; an unavailable service escalates |
+| Decide an intervention | Current source evidence, policy, and review case | Human dispatch judgment in the existing operational system | Coordinator disposition and later outcome reconciliation | Outside the executable fixture; operator effectiveness and business benefit need target evidence |
+
+In the omission regression, the explanation says only that a shipment has a carrier update. It drops the score and selected route while retaining a source reference, so it passes the current shape check. The structured case still carries the original score, route, evidence revision, policy version, and model version. A separate test removes the score from the assessment and confirms escalation before staging. These checks prove the local routing boundary and preserve a known explanation-quality limitation; they do not prove that the prose is sufficient for human review.
+
+For a target service, apply the [paired evidence-loss tests](../../library/09-evaluation-corpus-and-review-loops.md#test-evidence-lost-between-steps) to the actual preparation path and review surface. A source must remain inspectable under the reviewer's permissions, and the operator trial must check whether people notice consequential omissions.
+
 ## Adoption and handoff
 
 | Capability | Customer owner | Pilot evidence | Handoff condition |
