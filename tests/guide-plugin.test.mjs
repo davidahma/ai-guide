@@ -27,6 +27,8 @@ test("search reaches canonical uncataloged chapters and canonical validation is 
   const redesign = await call("guide_search", { query: "Workflow step redesign", limit: 10 });
   assert.ok(redesign.results.some((item) => item.path === "templates/discovery-pack.md" && item.section === "Workflow step redesign"), JSON.stringify(redesign));
   for (const [query, expectedPath, expectedSection] of [
+    ["Application and platform baseline", "templates/production-service-readiness.md", "Application and platform baseline"],
+    ["Verify the application foundations you inherit", "library/17-enterprise-integration-and-scale-reality.md", "Verify the application foundations you inherit"],
     ["Operating-model hypotheses", "templates/workflow-portfolio-review.md", "Operating-model hypotheses"],
     ["Benefit realization", "templates/value-case.md", "Benefit realization"],
     ["When incremental improvement is not enough", "library/10-applied-ai-delivery-and-operating-model.md", "When incremental improvement is not enough"],

@@ -106,6 +106,16 @@ The Guide's executable examples use small in-memory fixtures so readers can insp
 
 Queues, caches, distributed workers, row-level security, column-level security, and immutable audit storage are not mandatory by category. They become required when the declared workflow, risk, regulation, workload, or operating objective demands them. The design record must explain the applicability decision and the evidence that supports it.
 
+## Verify the application foundations you inherit
+
+A workflow can pass its model evaluations while the application still loses edits, accepts an expired session, or repeats a payment after restoration. Include the application and platform baseline in the [readiness record](../templates/production-service-readiness.md#application-and-platform-baseline).
+
+For each applicable foundation, record who implements it and who owns its use in this workflow. The host application may provide sign-in, a shared platform may run jobs, and a vendor may store backups. The receiving service owner still needs the exact configuration or build revision, current evidence, a target integration test, a review date, and the change that would require another review. Missing provider evidence stays unresolved; outsourcing implementation does not establish readiness.
+
+Use an established application-security baseline such as OWASP ASVS for the relevant web surface. Pin its version and selected requirements, and let the security owner approve scope and exclusions. The dated [application-security standards review](../research/2026-08-09--reference-solution-standards.md#rs-05-application-security-verification) records the source and limits. Avoid copying a full SaaS checklist into every workflow: account recovery applies when interactive access is in scope; upload controls apply when files are accepted; billing applies when the service charges for usage.
+
+Test across ownership boundaries. Revoke access while a job waits, restore a checkpoint after an external write, and correct a form after server validation fails. Check that current authorization, duplicate safety, and the operator's permitted edits survive those transitions. These are test-design prompts; the teaching examples do not prove the target application's behavior. `IAM-003`, `REL-001`, `ADP-001`, `DEL-001`.
+
 ## Evidence required at the target boundary
 
 Use the [production service readiness record](../templates/production-service-readiness.md) rather than a generic “enterprise ready” label. For applicable dimensions, require visible target-system evidence for:

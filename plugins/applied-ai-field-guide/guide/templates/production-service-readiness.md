@@ -37,6 +37,7 @@ Start every row as `required`. Change a row to `not applicable` only with a name
 
 | Dimension | Status | Accountable owner | Target-system evidence and revision | Gap and next proof | Guide controls |
 | --- | --- | --- | --- | --- | --- |
+| Application and platform baseline | required | — | — | — | `DEL-001`, `DEL-002`, `SEC-004`, `IAM-003`, `ADP-001` |
 | Identity and authorization | required | — | — | — | `IAM-001`, `IAM-002`, `IAM-003`, `SEC-005` |
 | Source integration, reconciliation, and environment constraints | required | — | — | — | `CTX-001`, `CTX-005`, `CTX-006`, `CTX-008`, `CTX-009`, `DEL-002`, `SEC-006`, `SEC-007` |
 | Durable state and data recovery | required | — | — | — | `STA-001`, `STA-002`, `STA-003`, `OPS-005` |
@@ -51,10 +52,19 @@ Start every row as `required`. Change a row to `not applicable` only with a name
 
 ## Dimension prompts
 
+### Application and platform baseline
+
+- For each applicable foundation, name the implementing host application, shared platform, vendor, or workflow team and the accountable receiving owner. Record the configuration or build revision, evidence location, target integration test, review date, and change trigger in this row or a linked record.
+- Inherited responsibility is not a readiness status. Keep missing or stale evidence `unresolved`; a provider's assurance report does not establish that the application's configuration and integration work.
+- Where the slice includes interactive access, verify account recovery and session revocation with the identity owner. Where it exposes a web surface or uploads, select applicable server-side validation, injection prevention, browser/session protection, file handling, and dependency checks from a versioned application-security baseline. The [standards note](../research/2026-08-09--reference-solution-standards.md#rs-05-application-security-verification) links OWASP ASVS and its limits.
+- Check business representations that affect the decision: currency, units, reporting calendar, timezone, and Unicode handling. Link the source-owned definitions and boundary cases; do not assume a valid JSON field has the right business meaning.
+- Reuse existing services where they meet the target contract. SSO protocols, provisioning, billing, multiple regions, and particular compliance attestations apply only when the workflow and organization require them. Record exclusions using the existing `not applicable` status and rationale.
+
 ### Identity and authorization
 
 - Name interactive and unattended identities, tenant binding, current scopes, policy revision, and the action-boundary recheck.
 - Record denial, stale-policy, deprovisioning, and cross-tenant tests where applicable.
+- Exercise queued work after access revocation: the consequential action rechecks current authority and is denied even if admission previously succeeded.
 
 ### Source integration, reconciliation, and environment constraints
 
@@ -68,6 +78,7 @@ Start every row as `required`. Change a row to `not applicable` only with a name
 
 - Classify workflow and business state; record source of truth, retention, deletion, recovery point, replay, and migration behavior.
 - A database is required only when the workflow needs durable or queryable state. Record `not applicable` for genuinely stateless work with an owner-approved rationale.
+- Exercise a restore after an external effect but before its local receipt is saved. Reconcile the source of truth before any retry; restoring local state must not create a second business effect. Use a tested forward repair when reversing a migration would lose valid business state.
 
 ### Async work, concurrency, retries, and idempotency
 
@@ -100,6 +111,7 @@ Start every row as `required`. Change a row to `not applicable` only with a name
 
 - Exercise the complete operating path: initiating actor, applicable scope and trigger, bounded orchestration and state, governed context, selected mechanisms, evaluation, abstention and escalation, controlled effect, source-of-truth readback, and durable result destination.
 - Exercise the final persistent surface with representative operators: find the work, inspect evidence and uncertainty, correct, reject, escalate, interrupt, and resume without losing state or audit history.
+- Exercise a correction after a UI validation failure: retain the authorized edit safely, explain the failed field, and let the operator retry or cancel without losing the previous accepted state. Do not retain secrets or expose another user's draft.
 - Reconcile eligible, exposed, completed, independently accepted, and business-effect events to the frozen adoption contract. Sample non-use and abandonment by reason rather than treating logins or runs as adoption.
 - Name access, training, support, domain-review, and escalation owners. Exercise expected reviewer/support load, queue and wait limits, overflow, degraded operation, and the manual fallback for the proposed cohort.
 - Advance this row to `tested` only when target users and the receiving team have exercised the path. Documentation, a demo, or delivery-team-led usage remains `designed`.

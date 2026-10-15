@@ -25,6 +25,7 @@ test("production readiness covers the minimum service boundary and resolves ever
     readFile(path.join(root, "controls", "control-catalog.json"), "utf8"),
   ]);
   for (const dimension of [
+    "Application and platform baseline",
     "Identity and authorization",
     "Source integration, reconciliation, and environment constraints",
     "Durable state and data recovery",
@@ -41,6 +42,28 @@ test("production readiness covers the minimum service boundary and resolves ever
   const citedControls = new Set(body.match(/\b[A-Z]{3}-\d{3}\b/g) ?? []);
   assert.ok(citedControls.size >= 15);
   for (const controlId of citedControls) assert.ok(knownControls.has(controlId), `unknown control ${controlId}`);
+});
+
+test("inherited application foundations retain owners, applicable checks, and target evidence", async () => {
+  const [body, chapter, skill, standards] = await Promise.all([
+    readFile(readinessPath, "utf8"),
+    readFile(path.join(root, "library", "17-enterprise-integration-and-scale-reality.md"), "utf8"),
+    readFile(path.join(root, ".agents", "skills", "review-ai-production-readiness", "SKILL.md"), "utf8"),
+    readFile(path.join(root, "research", "2026-08-09--reference-solution-standards.md"), "utf8"),
+  ]);
+  assert.match(body, /host application, shared platform, vendor, or workflow team/i);
+  assert.match(body, /configuration or build revision/i);
+  assert.match(body, /Inherited responsibility is not a readiness status/);
+  assert.match(body, /account recovery and session revocation/i);
+  assert.match(body, /currency, units, reporting calendar, timezone, and Unicode/i);
+  assert.match(body, /queued work after access revocation/i);
+  assert.match(body, /restore after an external effect/i);
+  assert.match(body, /correction after a UI validation failure/i);
+  assert.match(chapter, /Verify the application foundations you inherit/);
+  assert.match(chapter, /ASVS/);
+  assert.match(skill, /inherited application and platform foundations/i);
+  assert.match(standards, /### RS-05: Application security verification/);
+  assert.match(standards, /https:\/\/owasp.org\/projects\/asvs/);
 });
 
 test("infrastructure mechanisms remain conditional on the declared workflow", async () => {

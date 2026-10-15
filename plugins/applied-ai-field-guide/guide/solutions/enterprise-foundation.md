@@ -45,6 +45,8 @@ flowchart LR
 
 Authentication establishes identity. Provisioning changes the identity registry. Request-time authorization intersects the current principal, tenant, role, entitlement, resource, purpose, and policy revision. Database row- and column-level controls are defense in depth; they do not replace service-layer authorization and must not be inferred from a model, display name, or copied group label. `IAM-001`, `IAM-002`, `IAM-003`, `SEC-005`.
 
+Record which foundation is supplied by the host application, shared platform, identity provider, or workflow team in the [application and platform baseline](../templates/production-service-readiness.md#application-and-platform-baseline). Verify account recovery and session termination through the selected identity path when interactive access is in scope; do not create a separate password store merely to complete a checklist. Provider evidence needs a named owner, exact configuration, and target integration tests.
+
 Usage metering is deterministic financial infrastructure. Meter events need a stable business-operation identity, explicit aggregation semantics, service-enforced duplicate safety, and reconciliation against both the source system and billing provider. A model MAY explain an anomaly; it MUST NOT authorize access, rate an invoice, or prove revenue accuracy. `ARC-005`, `REL-001`, `REL-003`.
 
 ## Smallest useful slice
@@ -66,6 +68,7 @@ Add a second protocol, billing model, region, or tenant class only after the fir
 | --- | --- |
 | Cross-tenant or field-level access | Request is denied before data return; service, cache, job, log, row-filter, column-filter, database, tool, and telemetry paths show no unauthorized disclosure. |
 | User deprovisioning | Existing and new sessions lose authority within the declared objective; background work cannot reuse revoked identity. |
+| Account recovery or session termination, when applicable | Recovery cannot widen tenant membership or privileges; session termination meets the declared objective, and queued actions still recheck current authority. |
 | Role or entitlement downgrade | The next consequential request uses current policy and fails closed on missing or stale context. |
 | Duplicate usage event | Same business operation creates one accepted meter event and one billable unit under the declared aggregation rule. |
 | Late or corrected event | Reconciliation exposes the adjustment, source revision, owner, and customer-impact path. |

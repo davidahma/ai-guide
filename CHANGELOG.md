@@ -4,9 +4,11 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+- Make inherited application and platform foundations explicit in production readiness: name implementation and receiving owners, configuration revisions, applicable security checks, and target integration evidence. Add account-recovery, queued-revocation, restore/readback, and UI-correction test prompts without imposing a universal SaaS checklist.
+- Extend the existing reference-standards note with a dated OWASP review and update the readiness skill and plugin search coverage. Refresh the local plugin as development version `2.4.12`; no public release is made.
 - Add decision-critical evidence checks across extraction, ranking, summarization, and handoff. Paired omission cases check the downstream decision or fallback while preserving source authority and access limits.
 - Annotate the existing shipment-triage branches with inputs, mechanism choices, outputs, consumers, and failure checks. Add local regressions for an omitted explanation fact and a missing score; preserve the explanation validator's documented shape-only limitation.
-- Refresh evaluation and mechanism-selection skills and the packaged Guide for local development version `2.4.11`. Rerun the five-case invoice regression and refresh its report, raw output, and draft release bindings after the package-metadata change. No public release or new runtime capability is implied.
+- Refresh evaluation and mechanism-selection skills and the packaged Guide. Rerun the five-case invoice regression and refresh its report, raw output, and draft release bindings after the package-metadata change. No public release or new runtime capability is implied.
 - Distinguish semantic layers, ontologies, knowledge graphs, and context assembly in the existing context guidance, without requiring four services or a graph platform.
 - Clarify analytical metric definitions, valid aggregation and joins, applicable reporting-calendar and currency rules, and held-out executed-result evaluation. Extend the existing finance walkthrough with a checked fictional join-total error; no new executable lab or customer outcome is claimed.
 - Add a dated review of dbt, Snowflake, and DataHub documentation, keeping product behavior separate from independently verified correctness.

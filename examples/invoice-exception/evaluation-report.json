@@ -2,9 +2,9 @@
   "$schema": "../../schemas/evaluation-report.schema.json",
   "schema_version": "1.1.0",
   "report_id": "invoice_exception_reference_report",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "owner": "reference-evaluation-preparer",
-  "generated_at": "2026-10-14T11:49:37.834Z",
+  "generated_at": "2026-10-15T13:38:27.341Z",
   "claim": "The exact invoice-exception deterministic runtime passes all five committed regression cases under the recorded host-process environment.",
   "objective": "regression",
   "population": {
@@ -109,9 +109,9 @@
         {
           "component_id": "node-dependency-lock",
           "uri": "../../package-lock.json",
-          "version": "2.4.11",
+          "version": "2.4.12",
           "schema_version": null,
-          "digest": "sha256:bb90426f6d0efe80629602dd7cc402436a6aa8b946b2ed5f6c75e252ce877589"
+          "digest": "sha256:7654e1e94d405804ebdb658c61bea1ecf61b8f950fad8c17fda8a75977364f88"
         },
         {
           "component_id": "invoice-ontology",
@@ -240,7 +240,7 @@
           "digest": "sha256:e996c99a028739dcc49d173c8314f1220da64b9e1fbc79bccb0da8e01fabe670"
         }
       ],
-      "environment_digest": "sha256:3a1094aa1bcffd45abb1044ccd5f5ca7a141d0b6ae34e6d036cbce0c7dcdfee3",
+      "environment_digest": "sha256:3b85f09d338511a67ac63c65293d96bb7d42590e8b4be1864ae5b07f513e9fe6",
       "network_mode": "unenforced"
     }
   },
@@ -276,7 +276,7 @@
       "uri": "evaluation-output.json",
       "version": null,
       "schema_version": "1.0.0",
-      "digest": "sha256:7e82c6e00266598eb310d384f7104c9102206a2dbdaca01440475f895a3b243d"
+      "digest": "sha256:45fa60b7e8fcb63bbbbd0a771bba298f784587101e22b89f5e38ad3207cb265c"
     },
     "minimum_confidence": 1
   },
@@ -292,7 +292,7 @@
     "turns": 0,
     "tool_calls": 30,
     "total_tokens": 0,
-    "wall_time_ms": 48,
+    "wall_time_ms": 46,
     "cost_usd": 0,
     "peak_parallel_workers": 1
   },
@@ -394,7 +394,7 @@
     "rationale": "The bound executable runner and independent deterministic grader returned passing evidence for every exact committed regression case under the declared host-process limitations.",
     "decided_by": "deterministic-reference-grader",
     "authority_role": "repository-regression-evaluator",
-    "decided_at": "2026-10-14T11:49:37.834Z",
+    "decided_at": "2026-10-15T13:38:27.341Z",
     "independent_from_candidate": true
   },
   "control_ids": [
