@@ -4,6 +4,7 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+- Update `markdown-it-anchor` to 10.1.0. Rerun the five invoice teaching regressions and refresh their lockfile bindings and the packaged guide. The example release stays in review.
 - Prepare `davidahma/ai-guide` as the public repository. Rework the README and first-use routes, keep CI focused on the validation suite, and make Pages opt-in.
 - Separate review-only acceptance from later ledger corrections, correct cost and latency measures, and add a worked hold decision for a canary with insufficient evidence.
 - Exercise pending-state recovery across processes and compare shipment prioritization methods at equal reviewer capacity with point-in-time inputs. Add a portfolio choice and a peer handoff exercise; no target deployment or outcome is claimed.
