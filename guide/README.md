@@ -23,7 +23,7 @@ Applied-AI engineers build and test the behavior. Product and workflow owners de
 
 The output is an **owned change to work** with a verifier, bounded authority, full-cost case, operating team, and exit.
 
-Tokens are an input. Autonomy is a design choice. Accepted outcomes are the product.
+Measure what people can independently accept or verify. Track model usage and autonomy as design inputs.
 
 ## 2. The operating loop
 
@@ -92,7 +92,7 @@ cost per accepted outcome =
 
 Keep forecast, demonstrated pilot evidence, and realized production value separate. Don't annualize a narrow pilot without an owned extrapolation, and don't count the same benefit twice.
 
-The [worked invoice value case](../examples/invoice-exception/engagement/value-case.md) forecasts 240 accepted outcomes against $1,000 in monthly cost. Net value is only $320. A small miss in adoption, acceptance, review effort, or support cost erases it.
+The [worked invoice value case](../examples/invoice-exception/engagement/value-case.md) forecasts $320 per month in net time value if a later, authorized workflow produces 240 independently verified ledger corrections. The review-only trial would measure usable packets, not corrections or savings. A small miss in adoption, acceptance, review effort, or support cost erases the forecast margin.
 
 The [12 Factors of AI Value Engineering](../library/14-twelve-factors-ai-value-engineering.md) provide the full framework. Four are hard gates: an owned outcome, credible verifier, bounded authority and expected loss, and plausible positive value after full cost. Use the [one-page scorecard](ai-value-engineering-scorecard.md) for a live decision.
 
@@ -144,7 +144,7 @@ Legacy browser or desktop automation is its own controlled action boundary. Bind
 
 ## 8. Build one controlled vertical slice
 
-The first slice should cross the real interface and control boundaries without pretending to be the full product. Include one representative trigger and user, authoritative context, the selected decision route, the final work surface, a bounded effect, explicit failure states, acceptance telemetry, and owner-led recovery.
+Build one path through the real trigger, source, decision, and work surface. Record allowed effects, failure states, how you measure acceptance, and who handles recovery.
 
 Start adoption and handoff during the pilot. In the worked invoice case, a five-case fixture passes and the result is still handoff_blocked: the receiving team hasn't reproduced the adoption numbers, added an evaluation case, exercised rollback, handled an incident, or retired the service. Documents can't replace those exercises.
 
@@ -164,7 +164,7 @@ Use the [evaluation guide](../library/04-production-evaluation-and-governance.md
 
 ## 10. Operate the service and transfer ownership
 
-Production is a recurring decision, not the last deployment step. Monitor accepted outcomes, value, adoption, source health, behavior versions, reliability, cost, prohibited effects, reviewer load, support, and owner continuity. Then decide whether to continue, improve, expand, constrain, pause, or retire.
+Monitor accepted outcomes, value, adoption, source health, behavior versions, reliability, cost, prohibited effects, reviewer load, and support. Decide whether to continue, improve, expand, constrain, pause, or retire.
 
 For company-wide adoption, centralize reusable identity, evaluation, telemetry, security, cost, and delivery rails while keeping outcome, source, policy, effect, service, and retirement accountability with each workflow. Operate AI-enabled services rather than counting agents. Grant authority separately by segment and effect class, and require every bounded proof to name its evidence cutoff, decision owner, receiving owner, separate graduation gates, and stop or reshape path.
 
@@ -175,8 +175,6 @@ Transfer is complete when the receiving team can operate, change, recover, suppo
 Use [Operate and Scale](../playbooks/03-operate-and-scale.md), the [service review](../templates/production-service-review.md), the [workflow portfolio review](../templates/workflow-portfolio-review.md) when several services share funding or enablement, and the [handoff template](../templates/customer-enablement-handoff.md).
 
 ## 11. Turn field learning into product capability
-
-The compounding advantage is not reusable private data or a pile of custom code. It is learning which parts are local and which patterns travel.
 
 Keep policy, thresholds, identities, permissions, confidential sources, and operating decisions within the owning workflow and organization. Before building, classify the work as **customer or business-unit configuration**, a **target-owned extension**, a **shared product or platform** capability, a **time-bounded experiment**, or prohibited/deferred work. Don't leave a field-owned parallel service as a **shadow product**.
 
@@ -192,17 +190,18 @@ The [invoice-exception reference](../examples/invoice-exception/README.md) conne
 
 The [invoice policy retrieval lab](../examples/invoice-exception/retrieval-evaluation/README.md) separates ranking quality from permission, freshness, citation, conflict, abstention, latency, and cost.
 
-The [shipment-risk walkthrough](../examples/shipment-risk-triage/README.md) combines classical ML, deterministic policy, optional model explanation, and human review. Its [runtime](../examples/shipment-risk-triage/shipment-risk-triage.mjs) shows why an AI-enabled system need not be agent-first.
+The [shipment-risk runtime](../examples/shipment-risk-triage/shipment-risk-triage.mjs) combines classical ML, rules, optional model explanation, and human review. A [separate replay](../examples/shipment-risk-triage/README.md#compare-three-ways-to-rank-the-review-queue) compares queue order, a rule, and a fitted score at the same reviewer budget using decision-time inputs.
 
 ```bash
 npm ci --ignore-scripts
 npm run test:retrieval-evaluation
+npm run test:durable-recovery
 npm run test:reference
 npm run test:evals
 npm run test:hybrid
 ```
 
-These are in-memory teaching implementations. Tests prove only their declared local behavior. Map them to target source, integration, identity, state, audit, reconciliation, load, recovery, and environment requirements with [Enterprise Integration and Scale Reality](../library/17-enterprise-integration-and-scale-reality.md).
+These examples simulate enterprise systems. The recovery lab preserves simulated records on disk and reads them from a fresh process. The shipment replay uses synthetic records. Tests prove only their declared local behavior. Map them to target requirements with [Enterprise Integration and Scale Reality](../library/17-enterprise-integration-and-scale-reality.md).
 
 ## 13. Start a real engagement
 

@@ -4,29 +4,27 @@
 
 A common Monday starts like this: “Build an agent that clears invoice exceptions.” By 9:40, the analyst has shown you three queues, an unmentioned spreadsheet, and a controller-only policy check. The request described one workflow. The work has four. Sometimes the brief is wrong. Sometimes the data, design, evaluation, or operating path is the problem.
 
-Don't open the architecture diagram yet.
-
-Whether you're on an internal AI team or a customer engagement, first find what is happening, what is worth changing, who has authority, and what would make the result acceptable. Then build the smallest intervention that can survive the real operation.
+Don't open the architecture diagram yet. Find what actually happens, who decides, and what would make the result acceptable.
 
 This page is guidance—not production approval, customer authority, or a substitute for the target organization's policy, security, architecture, and risk review.
 
 ## Start with today's job
 
-You don't need to learn the repository before using it. Pick the line that sounds closest to today.
-
 | You need to… | Do this next | Leave the first pass with |
 | --- | --- | --- |
+| **Choose what to fund** | Compare the next proof each workflow needs and what it would cost. Start with the [executive funding guide](funding-ai-for-accepted-outcomes.md). | A funded test, an accountable owner, and a reason to hold the other work |
+| **Review an inherited application** | Check what the current platform and configuration already prove, then test what this workflow adds. Use the [application and platform baseline](../templates/production-service-readiness.md#application-and-platform-baseline). | Evidence you can reuse, checks still needed, and a trigger to revisit them |
 | **Decide where AI could help** | Follow one recent case, define the decision and accepted outcome, then compare rules, retrieval, models, agents, and human review. Start with [Discovery and Value](../playbooks/01-discovery-and-value.md). | An observed decision, verifier, baseline, and smallest plausible mechanism |
 | **Build or repair an AI feature** | Bound one vertical slice through the real source, user surface, failure path, and owner. Use [Solution and Delivery](../playbooks/02-solution-and-delivery.md) and the [invoice review lab](../examples/invoice-exception/document-review/README.md). | One testable path, explicit exclusions, and a result a user can inspect or reject |
 | **Find why retrieval or answers are weak** | Separate retrieval, source support, permissions, freshness, and abstention. Use [Context and Knowledge Systems](../library/02-context-and-knowledge-systems.md) and the [retrieval lab](../examples/invoice-exception/retrieval-evaluation/README.md). | A failed case tied to the layer that owns the repair |
 | **Prepare a release or material change** | Test the exact behavior and dependency versions, then name rollout and rollback conditions. Use the [release gates](../operations/release-gates.md). | A bounded release claim and the evidence still missing |
 | **The brief doesn't match the work** | Preserve what was promised or requested, then follow one recent case with the person who handled it. Use the [field-engagement playbook](../playbooks/00-field-engagement-and-reframing.md). | The inherited claim, the observed reality, and the next decision written separately |
-| **The sponsor, operator, and policy disagree** | Cite each claim, name the safe fallback, and ask the actual disposition authority for a scoped decision. Use the [engagement-reframe record](../templates/engagement-reframe.json). | A bounded conflict, its evidence, and an accepted, rejected, or deferred reframe |
+| **Staff the next test** | Use the [staffing view](capability-roadmap.md#staff-the-workflow-you-have) to check actual availability and separation of duties. | Named people, decision rights, reviewer time, and a backup |
 | **Something was built, but nobody will accept or own it** | Stop adding features. Check acceptance evidence, operating ownership, rollback, support, and transfer with [production readiness](../templates/production-service-readiness.md) and the [customer handoff](../templates/customer-enablement-handoff.md). | A named gap, owner, and decision to repair, constrain, transfer, pause, or retire |
 
 ## Before you design anything
 
-Find the person who knows the work because they do it, repair it, or get blamed when it goes wrong. Recent exceptions are a better trail than the org chart. Ask for one actual case. Watch the handoffs, judgment calls, policy checks, and quiet workarounds.
+Ask the person who does or repairs the work to show you a recent exception. Watch the handoffs, judgment calls, policy checks, and quiet workarounds.
 
 Keep evidence separate: what sponsors say, operators do, systems enforce, and policy authorizes. Inspect relevant code or configuration, data, permissions, and one representative execution. Questionnaires and maturity scores don't prove readiness.
 
@@ -40,7 +38,7 @@ Now write the conflict in plain English. For example:
 >
 > **Decision needed:** whether to test that bounded review path for two weeks.
 
-It gives the right person something concrete to accept, reject, narrow, or defer. Until that happens, preserve the original brief.
+Use the [reframe record](../templates/engagement-reframe.json) to preserve the brief and ask the right owner to decide.
 
 This is a compressed field path, not the [canonical lifecycle](../README.md#from-idea-to-production).
 
@@ -56,7 +54,7 @@ flowchart LR
 
 ## Once the boundary is real
 
-Define what success means before choosing the mechanism. Name the eligible work, current baseline, intended outcome, accountable owner, and independent verifier. Add the decision deadline, full-cost ceiling, guardrails, and the conditions for continuing, reshaping, pausing, or stopping.
+Before choosing a mechanism, write down eligible work, baseline, outcome, owner, verifier, deadline, cost ceiling, and when to stop.
 
 If nobody with authority can accept the outcome, you're still in discovery.
 

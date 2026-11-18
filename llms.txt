@@ -2,7 +2,7 @@
 
 Summary: An open-source design and verification kit for applied-AI engineers, product and workflow owners, service operators, and FDEs. It connects fieldwork, value, engineering, and operations for customer and internal workflows. Select the smallest sufficient mechanism; a model or agent is optional.
 License: Apache-2.0
-Website: https://davidahmann.github.io/applied-ai-field-guide/
+Canonical repository: https://github.com/davidahma/ai-guide
 
 Read [AGENTS.md](AGENTS.md) before modifying this repository.
 
@@ -13,7 +13,7 @@ Read [AGENTS.md](AGENTS.md) before modifying this repository.
 - Governed retrieval and ranking lab: [Invoice policy retrieval evaluation](examples/invoice-exception/retrieval-evaluation/README.md)
 
 - Human overview: [README.md](README.md)
-- Searchable web guide: [The Applied AI Field Guide](https://davidahmann.github.io/applied-ai-field-guide/)
+- Searchable web guide: [build and preview from the canonical Markdown](docs/maintainers/repository-maintenance.md#public-site-procedure)
 - Situation-first five-minute orientation: [guide/field-guide-in-five-minutes.md](guide/field-guide-in-five-minutes.md)
 - Concise linear Applied AI Field Guide: [guide/README.md](guide/README.md)
 - Applied AI capability roadmap: [guide/capability-roadmap.md](guide/capability-roadmap.md)

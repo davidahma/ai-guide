@@ -28,6 +28,14 @@ function initialState() {
   return { schema_version: "1.0.0", operations: {}, effects: {}, audit: [] };
 }
 
+function isRecord(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function hasSupportedShape(state) {
+  return isRecord(state) && state.schema_version === "1.0.0" && isRecord(state.operations) && isRecord(state.effects) && Array.isArray(state.audit);
+}
+
 function validRequest(request) {
   return request
     && typeof request === "object"
@@ -65,7 +73,7 @@ export async function createDurableRecoveryLab(root, {
     state = initialState();
     await persist();
   }
-  if (!state || state.schema_version !== "1.0.0" || typeof state.operations !== "object" || typeof state.effects !== "object" || !Array.isArray(state.audit)) {
+  if (!hasSupportedShape(state)) {
     throw new Error("durable-recovery state is malformed");
   }
 
@@ -89,9 +97,57 @@ export async function createDurableRecoveryLab(root, {
     return request.policy_revision === currentPolicyRevision && request.approval_revision === currentApprovalRevision;
   }
 
-  function receiptFor(id) {
-    const effect = state.effects[id];
-    return effect ? { operation_id: id, effect_id: effect.effect_id, invoice_id: effect.invoice_id, tenant_id: effect.tenant_id, verified_by: "simulated_source_of_truth_readback" } : null;
+  function matchesOperation(operation, request, id) {
+    return operation.operation_id === id && operation.tenant_id === request.tenant_id && operation.invoice_id === request.invoice_id;
+  }
+
+  function receiptFor(id, effect) {
+    return { operation_id: id, effect_id: effect.effect_id, invoice_id: effect.invoice_id, tenant_id: effect.tenant_id, verified_by: "simulated_source_of_truth_readback" };
+  }
+
+  async function readRecordedEffect(id, operation) {
+    if (!readbackAvailable) return { status: "unavailable" };
+    const stored = JSON.parse(await readFile(file, "utf8"));
+    if (!hasSupportedShape(stored)) throw new Error("durable-recovery readback state is malformed");
+    if (!Object.hasOwn(stored.effects, id)) return { status: "absent" };
+    const effect = stored.effects[id];
+    if (!isRecord(effect) || effect.tenant_id !== operation.tenant_id || effect.invoice_id !== operation.invoice_id
+      || effect.idempotency_key !== id || effect.status !== "committed" || typeof effect.effect_id !== "string" || !effect.effect_id) {
+      return { status: "mismatch" };
+    }
+    return { status: "committed", effect };
+  }
+
+  function hold(disposition, effectCreated = false) {
+    return { status: "reconciliation_pending", disposition, receipt: null, effect_created: effectCreated };
+  }
+
+  async function readbackHold(id, disposition, effectCreated = false) {
+    record(disposition, { operation_id: id });
+    await persist();
+    return hold(disposition, effectCreated);
+  }
+
+  async function createEffect(id, request, { fault = null, resumed = false } = {}) {
+    state.effects[id] = {
+      effect_id: `effect-${id.slice(-12)}`,
+      tenant_id: request.tenant_id,
+      invoice_id: request.invoice_id,
+      idempotency_key: id,
+      status: "committed",
+    };
+    record("external_effect_created", { operation_id: id, effect_id: state.effects[id].effect_id });
+    await persist();
+    if (fault === "after_effect_before_receipt") throw recoveryError("SIMULATED_AMBIGUOUS_EFFECT", "external effect may have completed; do not retry before readback");
+    const readback = await readRecordedEffect(id, state.operations[id]);
+    if (readback.status === "unavailable") return readbackHold(id, "readback_unavailable_escalate", true);
+    if (readback.status !== "committed") return readbackHold(id, "readback_did_not_match_operation", true);
+
+    state.operations[id].status = "completed";
+    state.operations[id].completion_reason = resumed ? "resumed_after_verified_absence" : "same_process_readback";
+    record("effect_read_back", { operation_id: id });
+    await persist();
+    return { status: "completed", disposition: resumed ? "resumed_after_verified_absence" : "verified_effect", receipt: receiptFor(id, readback.effect), effect_created: true };
   }
 
   async function submit(request, { fault = null } = {}) {
@@ -103,13 +159,14 @@ export async function createDurableRecoveryLab(root, {
     if (existing?.status === "completed") {
       record("duplicate_delivery_replayed", { operation_id: id });
       await persist();
-      return { status: "completed", disposition: "existing_verified_effect", receipt: receiptFor(id), effect_created: false };
+      return recover(request);
     }
     if (existing?.status === "pending_effect") {
       record("duplicate_delivery_requires_reconciliation", { operation_id: id });
       await persist();
-      return { status: "reconciliation_pending", disposition: "do_not_blindly_retry", receipt: null, effect_created: false };
+      return hold("do_not_blindly_retry");
     }
+    if (Object.hasOwn(state.operations, id) || Object.hasOwn(state.effects, id)) return hold("recorded_state_requires_reconciliation");
 
     state.operations[id] = {
       operation_id: id,
@@ -123,53 +180,42 @@ export async function createDurableRecoveryLab(root, {
     await persist();
     if (fault === "before_effect") throw recoveryError("SIMULATED_INTERRUPTION_BEFORE_EFFECT", "interrupted after intent persisted and before external effect");
 
-    state.effects[id] = {
-      effect_id: `effect-${id.slice(-12)}`,
-      tenant_id: request.tenant_id,
-      invoice_id: request.invoice_id,
-      idempotency_key: id,
-      status: "committed",
-    };
-    record("external_effect_created", { operation_id: id, effect_id: state.effects[id].effect_id });
-    await persist();
-    if (fault === "after_effect_before_receipt") throw recoveryError("SIMULATED_AMBIGUOUS_EFFECT", "external effect may have completed; do not retry before readback");
-
-    state.operations[id].status = "completed";
-    state.operations[id].completion_reason = "same_process_readback";
-    record("effect_read_back", { operation_id: id });
-    await persist();
-    return { status: "completed", disposition: "verified_effect", receipt: receiptFor(id), effect_created: true };
+    return createEffect(id, request, { fault });
   }
 
-  async function recover(request) {
+  async function recover(request, { resumeAbsentEffect = false } = {}) {
     if (!validRequest(request)) return deny(request, "caller_or_request_is_not_authorized");
     const id = operationId(request);
     const operation = state.operations[id];
-    if (!operation) return { status: "not_found", disposition: "no_recorded_operation", receipt: null, effect_created: false };
-    if (operation.status === "completed") return { status: "completed", disposition: "existing_verified_effect", receipt: receiptFor(id), effect_created: false };
-    const effect = state.effects[id];
-    if (effect) {
-      if (!readbackAvailable) {
-        record("readback_unavailable", { operation_id: id });
-        await persist();
-        return { status: "reconciliation_pending", disposition: "readback_unavailable_escalate", receipt: null, effect_created: false };
-      }
-      if (effect.tenant_id !== request.tenant_id || effect.invoice_id !== request.invoice_id) throw new Error("simulated readback did not match the persisted operation");
+    if (!Object.hasOwn(state.operations, id)) {
+      if (Object.hasOwn(state.effects, id)) return readbackHold(id, "effect_without_recorded_intent");
+      return { status: "not_found", disposition: "no_recorded_operation", receipt: null, effect_created: false };
+    }
+    if (!isRecord(operation) || !matchesOperation(operation, request, id) || !["pending_effect", "completed", "escalated"].includes(operation.status)) {
+      return readbackHold(id, "recorded_state_requires_reconciliation");
+    }
+    const readback = await readRecordedEffect(id, operation);
+    if (readback.status === "unavailable") return readbackHold(id, "readback_unavailable_escalate");
+    if (readback.status === "mismatch") return readbackHold(id, "readback_did_not_match_operation");
+    if (readback.status === "committed") {
+      const { effect } = readback;
+      if (operation.status === "completed") return { status: "completed", disposition: "existing_verified_effect", receipt: receiptFor(id, effect), effect_created: false };
       operation.status = "completed";
       operation.completion_reason = "recovered_source_of_truth_readback";
       record("effect_reconciled_after_restart", { operation_id: id, effect_id: effect.effect_id });
       await persist();
-      return { status: "completed", disposition: "reconciled_existing_effect", receipt: receiptFor(id), effect_created: false };
+      return { status: "completed", disposition: "reconciled_existing_effect", receipt: receiptFor(id, effect), effect_created: false };
     }
-    if (!requestIsCurrent(request)) {
-      operation.status = "escalated";
-      operation.escalation_reason = "approval_or_policy_changed_before_effect";
-      record("pending_operation_escalated", { operation_id: id, reason: operation.escalation_reason });
-      await persist();
-      return { status: "escalated", disposition: operation.escalation_reason, receipt: null, effect_created: false };
-    }
+    if (operation.status === "completed") return readbackHold(id, "completed_effect_missing_from_readback");
+    if (operation.status === "escalated") return { status: "escalated", disposition: operation.escalation_reason, receipt: null, effect_created: false };
+
+    const approvalIsUnchanged = requestIsCurrent(request)
+      && operation.policy_revision === request.policy_revision
+      && operation.approval_revision === request.approval_revision;
+    if (approvalIsUnchanged && resumeAbsentEffect === true) return createEffect(id, request, { resumed: true });
+
     operation.status = "escalated";
-    operation.escalation_reason = "no_effect_readback_requires_operator_decision";
+    operation.escalation_reason = approvalIsUnchanged ? "no_effect_readback_requires_operator_decision" : "approval_or_policy_changed_before_effect";
     record("pending_operation_escalated", { operation_id: id, reason: operation.escalation_reason });
     await persist();
     return { status: "escalated", disposition: operation.escalation_reason, receipt: null, effect_created: false };

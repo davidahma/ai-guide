@@ -252,13 +252,11 @@ test("the two public front doors remain compact while the complete guide keeps a
   ]);
   assert.ok(overview.split(/\s+/).length <= 1100, "README should remain a thin public router");
   assert.ok(guide.split(/\s+/).length <= 2600, "concise Guide should remain readable in one sitting");
-  for (const body of [overview, guide]) {
-    assert.match(body, /Tokens are an input\. Autonomy is a design choice\. Accepted outcomes are the product\./);
+  for (const route of ["guide/funding-ai-for-accepted-outcomes.md", "templates/production-service-readiness.md#application-and-platform-baseline", "examples/invoice-exception/durable-recovery/README.md"]) {
+    assert.ok(overview.includes(route), route);
   }
-  assert.match(guide, /The point isn't to embarrass the sponsor\. It is to make the consequence decidable\./);
-  for (const phrase of ["Monday morning", "the hard conversation can be plain", "Net value is only $320", "Documents can't replace those exercises"]) {
-    assert.ok(guide.toLowerCase().includes(phrase.toLowerCase()), phrase);
-  }
+  assert.match(guide, /240 independently verified ledger corrections/);
+  assert.match(guide, /review-only trial would measure usable packets, not corrections or savings/);
   assert.match(maintenance, /consolidation ceiling/);
   assert.match(maintenance, /growth without a compensating merge or removal/i);
 });
@@ -396,6 +394,24 @@ test("sitemap, crawler policy, and machine index cover the public guide", async 
   assert.ok(robots.includes(`Sitemap: ${site.url}/sitemap.xml`));
 });
 
+test("public site metadata points at the active repository without promising a release or Discussions", async () => {
+  const [home, robots, llms] = await Promise.all([
+    readFile(routeFile("/"), "utf8"),
+    readFile(path.join(outputRoot, "robots.txt"), "utf8"),
+    readFile(path.join(outputRoot, "llms.txt"), "utf8"),
+  ]);
+  assert.equal(site.repository, "https://github.com/davidahma/ai-guide");
+  assert.equal(site.url, "https://davidahma.github.io/ai-guide");
+  assert.equal(site.author.url, "https://www.linkedin.com/in/dahmann/");
+  assert.ok(llms.includes(`Canonical repository: ${site.repository}`));
+  assert.ok(robots.includes("https://davidahma.github.io/robots.txt"));
+  const footer = home.match(/<footer[^>]*>[\s\S]*?<\/footer>/)?.[0] ?? "";
+  assert.deepEqual(matches(footer, /href="([^"]+)"/g), [
+    `${site.repository}/blob/main/CHANGELOG.md`,
+    `${site.repository}/issues`,
+  ]);
+});
+
 test("site output is self-contained and free of retired or local references", async () => {
   for (const required of [
     "assets/site.css",
@@ -442,7 +458,7 @@ test("the social preview keeps an editable source and a GitHub-compatible determ
     "Choose the mechanism",
     "Prove the outcome",
     "Operate the system",
-    "github.com/davidahmann/applied-ai-field-guide",
+    "github.com/davidahma/ai-guide",
   ]) assert.ok(source.includes(phrase), phrase);
   assert.doesNotMatch(source, /(?:href|src)=["']https?:\/\/|@import|<image\b/i);
   assert.doesNotMatch(source, /FDE FIELD GUIDE|The work before|the architecture\./);

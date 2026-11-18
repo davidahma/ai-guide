@@ -15,7 +15,7 @@ governed actuals and approved plan
   -> approved commentary is distributed through the existing close process
 ```
 
-The accepted outcome is **a finance reviewer accepts or rejects a commentary packet whose numbers reconcile to governed sources and whose explanations are attributable**. The system does not claim that it explains a variance correctly, changes a forecast, posts a journal entry, or approves distribution.
+The accepted outcome is **a finance reviewer confirms that the packet reconciles to governed sources and its explanations are attributable**. A policy-supported decision to omit immaterial commentary can count if an independent reviewer verifies it and the charter includes it. Rejecting an incorrect or unsupported packet does not count. Acceptance does not change a forecast, post a journal entry, or approve distribution.
 
 ## Start with one bounded review
 

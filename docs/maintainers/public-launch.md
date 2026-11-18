@@ -1,0 +1,14 @@
+# Applied AI Field Guide public launch
+
+The public entry point is the GitHub repository. Keep one canonical delivery method and one end-to-end invoice engagement. Readers should find a decision, a worked artifact, and its evidence limit without learning the folder tree.
+
+| Workstream | Scope | Acceptance |
+| --- | --- | --- |
+| Evidence and economics | Separate review-only acceptance, independently verified corrections, qualified no-action decisions, realized value, and labor value. Make pilot gates and operational cost/latency metrics unambiguous. | No stage requires evidence it cannot produce. A counterexample checks why stage percentiles are not the end-to-end percentile. |
+| Architecture | Extend the existing invoice recovery lab and ADR with a previous-version pending record, one measurable failure scenario, and inherited-platform evidence. | A fresh process makes the correct resume, reconciliation, or hold decision without duplicating a simulated effect. Release claims stay local. |
+| Applied AI comparison | Add a bounded shipment-prioritization comparison using point-in-time inputs, fixed chronological splits and equal reviewer capacity. Preserve the routing fixture and add a failed-case readout. | A simple baseline can win. Inputs, outcomes, costs and limits are inspectable without a model key or an external data source. |
+| Reader and leader routes | Rewrite the README around funding, design, and operation. Link the smallest useful artifact from each entry point; add one filled portfolio choice and one peer handoff exercise. | A new practitioner can run an example and a lead can choose a next test. No new lifecycle, required agent stack, or second public website. |
+| Repository and CI | Update target links, package/citation metadata, dependencies, and the maintainer procedure. Keep one required validation check; retain Pages as opt-in. | Clean install, regression suite, build, browser checks where available, and reviewed dependency audit. |
+| Publication | Review repository history, public metadata, and inactive branches for secrets and restricted material. Land via a scoped pull request and confirm default-branch CI before changing visibility. | The intended repository opens without authentication. The released tree, checks, and public instructions agree. Stop if restricted history or missing authority makes publication unsafe. |
+
+Borrow a measurable failure scenario from [arc42](https://docs.arc42.org/section-10/), previous-version compatibility checks from [Temporal](https://docs.temporal.io/develop/safe-deployments), cohort-aware release checks from the [Google SRE Workbook](https://sre.google/workbook/canarying-releases/), and sample-level evaluation diagnosis from [Inspect AI](https://inspect.aisi.org.uk/log-viewer.html). These are design references, not dependencies or release evidence.

@@ -19,7 +19,7 @@ Shipment event
   -> measure accepted intervention, service, cost, and overrides
 ```
 
-The accepted outcome is **a coordinator accepts or rejects a correctly routed review case with current evidence**. The system never claims that a risk score, explanation, or queue entry fixed a shipment.
+The accepted outcome is **a coordinator makes an evidence-backed disposition on a correctly routed review case**. A correct no-action disposition counts; rejecting a bad route or an unsupported evidence packet does not. A risk score, explanation, or queue entry does not prove that a shipment was fixed.
 
 ## Follow the delivery journey
 
@@ -27,7 +27,7 @@ The accepted outcome is **a coordinator accepts or rejects a correctly routed re
 | --- | --- | --- | --- |
 | Discover | Observe dispatch triage, exceptions, data gaps, and workarounds | [Workflow charter](workflow-charter.json) records the observed job and discovery assumptions | Continue only if coordinators validate the workflow and signal availability |
 | Value | Define eligible shipments, baseline, benefit, full cost, and guardrails | [Workflow charter](workflow-charter.json) and [design record](design-record.md) contain illustrative economics | Replace fixture values with measured baseline and a credible counterfactual |
-| Select | Compare rules, optimization, ML, model explanation, and human review | [Intelligence-selection record](intelligence-selection.md) | Retain each component only if it improves the accepted outcome within its ceiling |
+| Select | Compare rules, optimization, ML, model explanation, and human review | [Intelligence-selection record](intelligence-selection.md) and [offline queue comparison](#compare-three-ways-to-rank-the-review-queue) | Retain each component only if it improves the accepted outcome within its ceiling |
 | Design | Own state, evidence, policy, trust boundaries, and effects | [Design record](design-record.md), [ontology](ontology.json), [system map](system-map-manifest.json), and [tool contracts](tools/) | Keep action authority with dispatch; use a review queue as the only system effect |
 | Prove | Test routing, stale evidence, malformed scores, explanation failure, and budget limits | [Evaluation cases](evals/) and executable [tests](shipment-risk-triage.test.mjs) | Promote only the named segment and model/policy versions that pass representative checks |
 | Adopt | Train coordinators, expose routing evidence, and collect overrides | The adoption plan below | Expand only after usage, override, and support evidence meet the charter |
@@ -76,6 +76,30 @@ Read each row as a decision with an evidence requirement and a fallback. The fix
 In the omission regression, the explanation says only that a shipment has a carrier update. It drops the score and selected route while retaining a source reference, so it passes the current shape check. The structured case still carries the original score, route, evidence revision, policy version, and model version. A separate test removes the score from the assessment and confirms escalation before staging. These checks prove the local routing boundary and preserve a known explanation-quality limitation; they do not prove that the prose is sufficient for human review.
 
 For a target service, apply the [paired evidence-loss tests](../../library/09-evaluation-corpus-and-review-loops.md#test-evidence-lost-between-steps) to the actual preparation path and review surface. A source must remain inspectable under the reviewer's permissions, and the operator trial must check whether people notice consequential omissions.
+
+## Compare three ways to rank the review queue
+
+Run this optional comparison from the repository root. It uses a separate teaching fixture, needs only Node.js, and never stages a case or calls a model service.
+
+```bash
+node examples/shipment-risk-triage/mechanism-comparison.mjs
+```
+
+Each method sees the same two February batches and gets ten reviewer minutes per batch. The fixture fixes the planning estimate at five minutes per shipment before ranking; it does not measure actual review time. That gives dispatch two of six review slots per batch. Oldest-first order represents the current queue without simulating coordinator judgment. The rule puts shipments with a known carrier disruption first. The fitted score learns historical late-arrival rates for four groups: scan delay of at least 60 minutes or less than 60 minutes, each with and without a disruption. Higher scores rank first; ties use queue time, then shipment ID. A case lacking a needed signal or fitted group keeps its original queue position and still uses review time if selected.
+
+The replay rejects a batch containing a shipment that had not joined the queue by decision time. It uses only signals both observed and available at that time, so a later carrier update is excluded even when backdated. The score learns from 12 January decisions with delivery outcomes known by February 1, excluding one case whose outcome arrived later. It then ranks 12 February cases without refitting. The report grades these rankings against outcomes available by February 15. It leaves one outcome unknown rather than counting it as on time.
+
+| Queue method | Reviewer minutes used | Known late shipments selected (of 5) | Selected with unknown outcome | Kept in place for missing inputs |
+| --- | ---: | ---: | ---: | ---: |
+| Oldest first | 20 | 1 | 1 | 0 |
+| Disruption-first rule | 20 | 4 | 0 | 1 |
+| Fitted score | 20 | 1 | 0 | 1 |
+
+Check calibration separately from queue performance. On all ten later cases with both a score and an outcome, the report includes mean squared probability error (Brier score), forecast groups, and results by carrier disruption. The fitted score gave the four disrupted shipments a 20% risk each; all four were late in this fixture. A score can miss a particular shipment even when it is well calibrated overall, so inspect both the reviews it would prioritize and the rates behind its scores.
+
+**Failure readout — `FEB01-03`:** The case is known to have arrived late, and the disruption was already visible to dispatch. The disruption rule selected it, but the fitted score assigned 20% and ranked it fourth, outside the two review slots. On this fixture, the rule is the better candidate for further comparison. On a real workflow, check whether the ranking difference repeats on more untouched batches with representative volumes, missing inputs, review times, and operating conditions. Do not tune against the same cases and then count them as fresh proof.
+
+The [versioned fixture](mechanism-comparison-fixture.mjs) contains authored teaching labels, not carrier records or independently adjudicated business outcomes. It deliberately makes the historical signal less useful in the later batches. A more accurate queue could still fail to improve delivery: selecting more shipments that later arrived late says nothing about whether a coordinator could have prevented the delays or at what cost. Neither this replay nor the runtime fixture selects a production mechanism. See the [selection record](intelligence-selection.md) for the distinction between the two exercises.
 
 ## Adoption and handoff
 

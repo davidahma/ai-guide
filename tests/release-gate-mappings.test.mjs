@@ -42,3 +42,27 @@ for (const [gate, heading] of Object.entries(headingByGate)) {
     assert.deepEqual(actual, expected);
   });
 }
+
+test("full-case P95 does not hide slow cases at different stages", () => {
+  const nearestRankP95 = (samples) => [...samples].sort((a, b) => a - b)[Math.ceil(samples.length * 0.95) - 1];
+  const queue = Array.from({ length: 100 }, (_, i) => i < 4 ? 100 : 10);
+  const run = Array.from({ length: 100 }, (_, i) => i >= 4 && i < 8 ? 100 : 10);
+  const fullCase = queue.map((wait, i) => wait + run[i]);
+
+  assert.equal(nearestRankP95(queue) + nearestRankP95(run), 20);
+  assert.equal(nearestRankP95(fullCase), 110);
+
+  const scorecard = readFileSync(new URL("../operations/slo-scorecard.md", import.meta.url), "utf8");
+  assert.match(scorecard, /P95 from the full per-case durations/);
+  assert.match(scorecard, /full-case P95 is 110 seconds/);
+  assert.match(scorecard, /If an open case has crossed the objective's deadline, count it as over the deadline/);
+  assert.match(scorecard, /With zero accepted outcomes, the ratio is unavailable/);
+  assert.doesNotMatch(scorecard, /queue_wait_p95\s*\+\s*run_time_p95/);
+});
+
+test("worked canary separates concurrent control, containment, and inconclusive evidence", () => {
+  assert.match(releaseGates, /No case is sent to both routes for action/);
+  assert.match(releaseGates, /prior window is context, not the control/);
+  assert.match(releaseGates, /do not replay an uncertain effect/);
+  assert.match(releaseGates, /68 candidate cases reached a known deadline result against the planned minimum of 100\. \*\*Hold; do not expand\./);
+});

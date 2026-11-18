@@ -40,9 +40,9 @@ Keep technical performance, operator acceptance, adoption, business value, full 
 
 ## Read one worked decision
 
-The [invoice-exception engagement](../examples/invoice-exception/engagement/README.md) begins with a fictional sold promise: automatically resolve and post eligible exceptions. Field evidence shows that a reviewer must approve a staged correction before posting.
+In the hypothetical [invoice-exception engagement](../examples/invoice-exception/engagement/README.md), the team promised to resolve and post eligible exceptions automatically. Field evidence shows that a reviewer must approve a staged correction before posting.
 
-The reframe narrows the slice to recommendation and staging. It preserves the original promise as superseded history, keeps the manual queue as the safe fallback, and names the next field move. The value case then makes its assumptions visible: under the illustrative numbers, the forecast net value is only $320 per month. Small misses in adoption, acceptance, review effort, or support cost erase it.
+The reframe narrows the slice to recommendation and staging. The manual queue remains the fallback. A review-only trial would measure usable review packets and reviewer effort; it would not count ledger corrections. The [worked value case](../examples/invoice-exception/engagement/value-case.md) forecasts $320 per month in net time value for a later authorized workflow, assuming 240 independently verified ledger corrections. Small misses in adoption, acceptance, review effort, or support cost erase that margin.
 
 The fixture runtime passes five committed deterministic cases, including authority and duplicate-safety paths. That is useful engineering evidence. It is not customer value, adoption, deployment approval, or handoff proof. The worked review therefore says: continue as a review-only shadow candidate; do not deploy.
 

@@ -5,13 +5,14 @@ import { createServer } from "node:http";
 import { mkdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { site } from "../site/site.config.mjs";
 const playwrightModule = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const chromium = playwrightModule.chromium ?? playwrightModule.default?.chromium;
 if (!chromium) throw new Error("Playwright module does not expose Chromium");
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../site-dist");
 const screenshotDirectory = process.env.SITE_SCREENSHOT_DIRECTORY;
 if (screenshotDirectory) await mkdir(screenshotDirectory, { recursive: true });
-const base = "/applied-ai-field-guide";
+const base = new URL(site.url).pathname.replace(/\/$/, "");
 const server = createServer(async (request, response) => {
   try {
     const requested = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
@@ -25,12 +26,15 @@ const server = createServer(async (request, response) => {
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
 try {
   for (const width of [1280, 390]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, acceptDownloads: true });
     const page = await context.newPage();
     const errors = []; page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${origin}${base}/`);
+    await page.locator(".mermaid svg").first().waitFor();
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `home overflow at ${width}`);
     await page.goto(`${origin}${base}/practice/invoice-review/`);
     await page.getByRole("button", { name: /search/i }).first().click();
     await page.locator("#site-search-input").fill("invoice document");

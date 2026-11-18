@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davidahmann/applied-ai-field-guide.git"
+    "url": "git+https://github.com/davidahma/ai-guide.git"
   },
   "bugs": {
-    "url": "https://github.com/davidahmann/applied-ai-field-guide/issues"
+    "url": "https://github.com/davidahma/ai-guide/issues"
   },
-  "homepage": "https://davidahmann.github.io/applied-ai-field-guide/",
+  "homepage": "https://github.com/davidahma/ai-guide",
   "keywords": [
     "applied-ai",
     "fde",
@@ -31,7 +31,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "build:site": "node scripts/build-site.mjs",
@@ -69,15 +69,15 @@
     "test:policy": "node --test examples/invoice-exception/authorization-policy.test.mjs",
     "test:reference": "node --test examples/invoice-exception/reference-loop.test.mjs",
     "test:evals": "node --test examples/invoice-exception/run-evals.test.mjs",
-    "test:hybrid": "node --test examples/shipment-risk-triage/shipment-risk-triage.test.mjs",
+    "test:hybrid": "node --test examples/shipment-risk-triage/shipment-risk-triage.test.mjs examples/shipment-risk-triage/mechanism-comparison.test.mjs",
     "test:site": "npm run build:site && node --test tests/site.test.mjs",
     "test": "npm run validate && npm run test:artifact-validator && npm run test:document-review && npm run test:retrieval-evaluation && npm run test:durable-recovery && npm run test:copilot && npm run test:markdown && npm run test:prose && npm run test:paths && npm run test:repository && npm run test:maintainers && npm run test:contracts && npm run test:tool-security && npm run test:telemetry && npm run test:governance && npm run test:release-integrity && npm run test:release-gates && npm run test:solutions && npm run test:value-framework && npm run test:data-readiness && npm run test:field-practice && npm run test:production-readiness && npm run test:enterprise-reality && npm run test:production-ai-operations && npm run test:factory-improvement && npm run test:skills && npm run test:guide-plugin && npm run test:policy && npm run test:reference && npm run test:evals && npm run test:hybrid && npm run test:site"
   },
   "devDependencies": {
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
-    "markdown-it": "15.0.2",
+    "markdown-it": "15.0.3",
     "markdown-it-anchor": "10.0.0",
-    "mermaid": "11.17.2"
+    "mermaid": "12.3.0"
   }
 }

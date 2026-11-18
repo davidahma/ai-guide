@@ -2,9 +2,9 @@
   "$schema": "../../schemas/evaluation-report.schema.json",
   "schema_version": "1.1.0",
   "report_id": "invoice_exception_reference_report",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "owner": "reference-evaluation-preparer",
-  "generated_at": "2026-10-15T13:38:27.341Z",
+  "generated_at": "2026-11-18T22:23:38.401Z",
   "claim": "The exact invoice-exception deterministic runtime passes all five committed regression cases under the recorded host-process environment.",
   "objective": "regression",
   "population": {
@@ -111,7 +111,7 @@
           "uri": "../../package-lock.json",
           "version": "2.4.12",
           "schema_version": null,
-          "digest": "sha256:7654e1e94d405804ebdb658c61bea1ecf61b8f950fad8c17fda8a75977364f88"
+          "digest": "sha256:14426ccbd86b87850cf0ddde618e9d370332a6f7283512968be2a71ce9c75926"
         },
         {
           "component_id": "invoice-ontology",
@@ -240,7 +240,7 @@
           "digest": "sha256:e996c99a028739dcc49d173c8314f1220da64b9e1fbc79bccb0da8e01fabe670"
         }
       ],
-      "environment_digest": "sha256:3b85f09d338511a67ac63c65293d96bb7d42590e8b4be1864ae5b07f513e9fe6",
+      "environment_digest": "sha256:2fc64a97a1ba0ec85e2c81b0609ce2638ab55397670f0c4452079e1de65d9c8e",
       "network_mode": "unenforced"
     }
   },
@@ -276,7 +276,7 @@
       "uri": "evaluation-output.json",
       "version": null,
       "schema_version": "1.0.0",
-      "digest": "sha256:45fa60b7e8fcb63bbbbd0a771bba298f784587101e22b89f5e38ad3207cb265c"
+      "digest": "sha256:c7fbdd1b1f2f0e9e775497249ac94b75b56d2e2262a09fd27a634fad5ec35b5c"
     },
     "minimum_confidence": 1
   },
@@ -292,7 +292,7 @@
     "turns": 0,
     "tool_calls": 30,
     "total_tokens": 0,
-    "wall_time_ms": 46,
+    "wall_time_ms": 48,
     "cost_usd": 0,
     "peak_parallel_workers": 1
   },
@@ -394,7 +394,7 @@
     "rationale": "The bound executable runner and independent deterministic grader returned passing evidence for every exact committed regression case under the declared host-process limitations.",
     "decided_by": "deterministic-reference-grader",
     "authority_role": "repository-regression-evaluator",
-    "decided_at": "2026-10-15T13:38:27.341Z",
+    "decided_at": "2026-11-18T22:23:38.401Z",
     "independent_from_candidate": true
   },
   "control_ids": [

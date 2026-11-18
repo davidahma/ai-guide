@@ -3,8 +3,8 @@ import { readdirSync, readFileSync } from "node:fs";
 export const site = {
   name: "The Applied AI Field Guide",
   shortName: "Applied AI Field Guide",
-  url: "https://davidahmann.github.io/applied-ai-field-guide",
-  repository: "https://github.com/davidahmann/applied-ai-field-guide",
+  url: "https://davidahma.github.io/ai-guide",
+  repository: "https://github.com/davidahma/ai-guide",
   description:
     "Open-source guidance for applied AI teams: understand the work, choose the right mechanism, prove the outcome, and operate the system.",
   author: {

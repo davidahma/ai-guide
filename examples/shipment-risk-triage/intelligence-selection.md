@@ -31,3 +31,5 @@ Controls: `ARC-004`, `ARC-005`, `VAL-001`, `VAL-002`, `CST-001`, `CST-002`.
 | Human review | Dispatch coordinator, dispatch operations | Accepted decision, override reason, and downstream outcome | Review time and training cost | Pause route if review burden or adoption guardrail fails |
 
 The model score is a prediction, not a decision. The explanation is a presentation aid, not evidence or authority. The coordinator remains responsible for the operational intervention.
+
+The rows above describe the design exercised by the runtime fixture, not a finding that predictive scoring beats simpler routes. The separate [offline queue comparison](README.md#compare-three-ways-to-rank-the-review-queue) shows how to compare oldest first, a rule, and a fitted score with the same reviewer time. On its deliberately small teaching fixture, the rule selects more shipments that later arrive late. Require a comparison on target data and coordinator evidence before keeping a fitted score in the live design; keep the simplest route that meets the agreed outcome and guardrails.
