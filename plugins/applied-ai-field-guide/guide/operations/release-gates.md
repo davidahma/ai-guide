@@ -65,7 +65,7 @@ Controls: `ARC-002`, `DEL-002`, `CTX-002`, `CTX-005`, `CTX-008`, `TOL-001`, `TOL
 
 | Metric | Pass condition |
 | --- | --- |
-| Accepted outcome | Meets segment threshold with confidence interval |
+| Accepted outcome | The independently verified outcome for this stage meets the segment threshold with a confidence interval; shadow packet acceptance is not a verified production effect |
 | Prohibited effects | `0` |
 | High-severity slice | Meets independent threshold |
 | Trace completeness | `100%` required span/event fields |
@@ -74,7 +74,7 @@ Controls: `ARC-002`, `DEL-002`, `CTX-002`, `CTX-005`, `CTX-008`, `TOL-001`, `TOL
 | Human review | Evidence packets are sufficient for named reviewers; reviewer effectiveness, burden, latency, capacity, and cost are measured or explicitly bounded where review supports the deployment claim |
 | Field-change integrity | Accepted reframes update only dependency-linked work, preserve prior state, and leave unrelated revisions and digests unchanged |
 | Adoption | Eligible use, completion, override, abandonment, and reviewer load meet predeclared thresholds |
-| Cost | P95 cost/accepted-outcome within budget |
+| Cost | [Full window cost per accepted outcome](slo-scorecard.md#measure-the-whole-case) meets the declared ceiling; failed and retried work is included, and zero accepted outcomes cannot pass. Tail cost and enforced per-run caps are checked separately |
 
 Controls: `ARC-005`, `FDE-003`, `FDE-005`, `VAL-001`, `ADP-001`, `DEL-001`, `DEL-002`, `CTX-001`, `CTX-002`, `CTX-003`, `CTX-005`, `CTX-006`, `CTX-007`, `CTX-008`, `CTX-009`, `TOL-002`, `TOL-004`, `TOL-005`, `IAM-002`, `IAM-003`, `SEC-004`, `SEC-005`, `REL-001`, `REL-002`, `REL-003`, `REL-004`, `REL-005`, `STA-001`, `EVA-001`, `EVA-002`, `EVA-003`, `EVA-005`, `EVA-006`, `EVA-007`, `HUM-001`, `HUM-002`, `HUM-003`, `OPS-001`, `OPS-005`, `OPS-007`, `CST-001`, `CST-002`.
 
@@ -94,6 +94,18 @@ Controls: `ARC-005`, `FDE-003`, `FDE-005`, `VAL-001`, `ADP-001`, `DEL-001`, `DEL
 | Release record | Complete artifact bundle, digests, environment, migration, canary, rollback, and approvals are valid in the target delivery system; a model/agent release also validates against `solution-release.schema.json` |
 
 Controls: `FDE-003`, `VAL-002`, `ADP-001`, `ADP-002`, `DEL-001`, `DEL-002`, `CTX-002`, `CTX-006`, `CTX-007`, `CTX-008`, `CTX-009`, `SEC-002`, `SEC-006`, `SEC-007`, `REL-003`, `REL-005`, `EVA-001`, `EVA-003`, `EVA-006`, `HUM-001`, `HUM-003`, `OPS-002`, `OPS-004`, `OPS-006`, `OPS-007`.
+
+### Worked canary decision: invoice review packets
+
+This is a hypothetical record for a separately approved, review-only release. The repository's [invoice fixture](../examples/invoice-exception/engagement/README.md) has not reached this gate. The structure borrows the concurrent control comparison from the [Google SRE Workbook](https://sre.google/workbook/canarying-releases/).
+
+| Item | Example record |
+| --- | --- |
+| Scope and control | At one site, route 20% of eligible domestic price-variance cases to the new review surface and 80% to the existing manual queue. Assign by invoice business key and keep the assignment on retries. Use the same eligibility and acceptance rules in both groups. The candidate may stage a proposal; it cannot post to the ledger. No case is sent to both routes for action. |
+| Baseline and comparison | The prior four weeks in the manual queue showed 96% independently correct dispositions and a P95 cycle time of 22 business hours. Compare with the concurrent manual group at readout; the prior window is context, not the control. Check the groups' exception mix and shared reviewer capacity before attributing a difference to the release. |
+| Window and decision rule | Enroll for 14 business days. Read out after the last enrolled case reaches the 24-business-hour service deadline. Count cases still open at the deadline as misses. Require at least 100 eligible cases with a known deadline result in each group and at least 95% accepted candidate dispositions. Check that the lower bound of a predeclared one-sided 95% confidence interval for candidate minus control acceptance is above −5 percentage points. Candidate full-case P95 must be within 24 business hours, and trace coverage and review capacity must pass. The duration, sample floor, and effect tolerance are examples, not transferable defaults. |
+| Hard stop and recovery | At the first unauthorized, duplicate, or unverified effect, the accounts-payable on-call owner stops new candidate admissions and disables its staging capability. Return affected work to the manual queue only after reconciling open cases and confirming ledger state; do not replay an uncertain effect. The finance controls manager independently verifies the reconciliation. |
+| Readout and disposition | At cutoff, zero hard stops fired, but only 68 candidate cases reached a known deadline result against the planned minimum of 100. **Hold; do not expand.** Return new work to the manual queue at the end of the approved window. Record the evidence gap and seek fresh approval before another observation period. A clean small sample does not clear the gate. |
 
 ## Gate 4 — Autonomy promotion
 

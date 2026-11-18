@@ -154,6 +154,9 @@ test("the invoice engagement preserves one navigable evidence chain without over
   assert.match(valueCase, /500 × 60% = 300/);
   assert.match(valueCase, /\$1,000 \/ 240 = \$4\.17/);
   assert.match(valueCase, /Every number is illustrative/);
+  assert.match(valueCase, /A review-only packet cannot establish a verified ledger outcome/);
+  assert.match(valueCase, /Rejecting an incorrect or unsupported packet does not count/);
+  assert.match(valueCase, /No-action cases do not enter this ledger-correction denominator; their handling costs still count/);
 
   const adoption = bodies[4];
   for (const phrase of [

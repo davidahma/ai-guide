@@ -70,7 +70,7 @@
       <text x="44" y="580" class="group">EVIDENCE SCALE</text>
       <text x="44" y="616" class="factor">0 - Undefined</text>
       <text x="222" y="616" class="factor">1 - Declared</text>
-      <text x="388" y="616" class="factor">2 - Demonstrated</text>
+      <text x="361" y="616" class="factor">2 - Demonstrated</text>
       <text x="44" y="654" class="factor-sub">Scores expose evidence gaps. They are not a certification or pass mark.</text>
     </g>
 
@@ -103,7 +103,7 @@
     <rect y="1064" width="1584" height="160" fill="#071a2a"/>
     <text x="64" y="1110" class="footer-title">Tokens are inputs. Autonomy is a design choice. Accepted outcomes are the product.</text>
     <text x="64" y="1146" class="footer">Framework: The 12 Factors of AI Value Engineering</text>
-    <text x="64" y="1178" class="footer">Worksheet and full guide: davidahmann.github.io/applied-ai-field-guide/ai-value-engineering-scorecard/</text>
+    <text x="64" y="1178" class="footer">Worksheet and full guide: github.com/davidahma/ai-guide/blob/main/guide/ai-value-engineering-scorecard.md</text>
     <text x="1520" y="1178" text-anchor="end" class="footer">Apache-2.0</text>
   </g>
 </svg>

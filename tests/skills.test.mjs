@@ -342,7 +342,7 @@ test("public navigation progressively discloses the Guide, Handbook, Engineering
   assert.match(readme, /They are not separate frameworks/);
   assert.match(guide, /They are three depths of one method/);
 
-  assert.match(readme, /npx skills add davidahmann\/applied-ai-field-guide/);
+  assert.match(readme, /npx skills add davidahma\/ai-guide/);
   assert.match(readme, /The guide is complete as documentation/);
   assert.ok(agents.indexOf("## Repository map") < agents.indexOf("## Skill routes"));
   assert.ok(llms.indexOf("## Core entry points") < llms.indexOf("## Optional task skills"));

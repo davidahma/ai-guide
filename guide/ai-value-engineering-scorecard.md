@@ -2,7 +2,7 @@
 
 > **12 factors. 4 hard gates. One outcome: accepted value.**
 
-Use this scorecard to decide whether a bounded AI-enabled workflow is ready to pilot, continue, constrain, pause, or retire. It is the portable assessment surface for the [12 Factors of AI Value Engineering](../library/14-twelve-factors-ai-value-engineering.md), not a separate framework.
+Use this scorecard to decide whether to keep investigating a bounded workflow, run a pilot, continue, constrain, pause, or retire it. It is the worksheet for the [12 Factors of AI Value Engineering](../library/14-twelve-factors-ai-value-engineering.md), not a separate framework.
 
 [Download the one-page PDF](../output/pdf/ai-value-engineering-scorecard.pdf) · [Open the SVG](../assets/ai-value-engineering-scorecard.svg) · [Open the PNG](../assets/ai-value-engineering-scorecard.png) · [Copy the machine-readable worksheet](../templates/ai-value-engineering-scorecard.json)
 
@@ -19,7 +19,9 @@ Mark each gate `pass`, `fail`, or `unknown`. A strong total cannot compensate fo
 | Bounded authority and loss | Are reads, effects, approvals, expected loss, recovery, and stop conditions explicit? | Authority matrix, effect ceiling, loss ceiling, recovery and stop evidence |
 | Positive value after full cost | Is positive net value plausible after adoption, lifecycle cost, and residual loss? | Base and downside economics with sources, owners, units, and assumptions |
 
-If any gate is `fail` or `unknown`, do not recommend `pilot` or `continue`. Choose `defer`, `do_not_build`, `constrain`, `pause`, or `retire` as appropriate and name the evidence that would change the decision.
+If any gate is `fail` or `unknown`, do not recommend `pilot` or `continue`. Use `discover` when a bounded, authorized investigation can close an evidence gap without new effect authority. Otherwise choose `defer`, `do_not_build`, `constrain`, `pause`, or `retire` as appropriate. Name the evidence that would change the decision.
+
+Define acceptance for the decision in front of you. If the charter allows an independently verified no-action, count it; keep defective outputs that reviewers rejected in the denominator but out of the accepted count. A usable review packet does not count as a completed transaction.
 
 ## Score the twelve factors
 
@@ -66,7 +68,7 @@ Use $engineer-ai-value to assess this bounded workflow with
 templates/ai-value-engineering-scorecard.json.
 
 Workflow: [describe the workflow and eligible population]
-Decision needed: [pilot, defer, do_not_build, continue, constrain, pause, or retire]
+Decision needed: [discover, pilot, defer, do_not_build, continue, constrain, pause, or retire]
 
 Keep assumptions separate from evidence. Mark every hard gate pass, fail, or unknown.
 Do not total the factor scores or let strong factors average away a failed gate.

@@ -5,7 +5,7 @@ Contributions that improve field judgment, technical accuracy, executable exampl
 ## Before opening a change
 
 1. Read [`AGENTS.md`](AGENTS.md) and follow the route for your change.
-2. Search existing [issues](https://github.com/davidahmann/applied-ai-field-guide/issues) and pull requests.
+2. Search existing [issues](https://github.com/davidahma/ai-guide/issues) and pull requests.
 3. For a new control, schema, or blueprint, open a design proposal before a large implementation.
 4. For a security issue, follow [`SECURITY.md`](SECURITY.md) instead of opening a public issue.
 
@@ -57,7 +57,7 @@ Repository skills live under [`.agents/skills/`](.agents/skills/) and remain thi
 
 ## Suggest a field signal or learning resource
 
-Use the focused [field-signal form](https://github.com/davidahmann/applied-ai-field-guide/issues/new?template=field-signal.yml) for one anonymized delivery lesson, failure pattern, useful practitioner resource, or missing capability topic. This is the lowest-friction contribution path; you do not need to propose a control, schema, or implementation.
+Use the [field-signal form](https://github.com/davidahma/ai-guide/issues/new?template=field-signal.yml) for one anonymized delivery lesson, failure pattern, useful practitioner resource, or capability gap. You do not need to propose a control, schema, or implementation.
 
 Explain why the signal matters to applied-AI delivery or operation, state whether it comes from direct experience or a source, and keep the claim no broader than the evidence. Do not include customer names, employer-confidential material, private data, credentials, or a disguised vendor pitch. A submitted signal is a research lead, not authority, target evidence, or an automatic roadmap addition.
 

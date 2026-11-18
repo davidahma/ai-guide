@@ -297,7 +297,7 @@ async function renderPage(page) {
   const searchIndex = relativeAsset(page.route, "assets/search-index.json");
   const home = relativeRoute(page.route, "/");
   const sourceUrl = repositoryUrl(page.source);
-  const releaseUrl = `${site.repository}/releases/latest`;
+  const changelogUrl = `${site.repository}/blob/main/CHANGELOG.md`;
   const pageUrl = canonicalUrl(page.route);
   const imageUrl = `${site.url}/assets/applied-ai-field-guide-social.png`;
   const mermaidScript = hasMermaid
@@ -367,7 +367,7 @@ async function renderPage(page) {
     </main>
     ${toc}
   </div>
-  <footer class="site-footer"><div class="footer-inner"><span>Independent open-source work by ${escapeHtml(site.author.name)}. Apache-2.0.</span><span><a href="${escapeHtml(releaseUrl)}">Latest release</a> · <a href="${escapeHtml(`${site.repository}/issues`)}">Issues</a> · <a href="${escapeHtml(`${site.repository}/discussions`)}">Discussions</a></span></div></footer>
+  <footer class="site-footer"><div class="footer-inner"><span>Independent open-source work by ${escapeHtml(site.author.name)}. Apache-2.0.</span><span><a href="${escapeHtml(changelogUrl)}">Changelog</a> · <a href="${escapeHtml(`${site.repository}/issues`)}">Issues</a></span></div></footer>
   <dialog class="search-dialog" id="site-search" aria-labelledby="site-search-label">
     <div class="search-form"><label id="site-search-label"><span class="visually-hidden">Search The Applied AI Field Guide</span><input class="search-input" id="site-search-input" type="search" placeholder="Search value, architecture, evaluation…" autocomplete="off"></label><button class="search-close" type="button" data-search-close>Close</button></div>
     <ul class="search-results" id="site-search-results" aria-live="polite"></ul>
@@ -477,7 +477,7 @@ async function build() {
   await writeFile(path.join(outputRoot, "sitemap.xml"), sitemap);
   await writeFile(
     path.join(outputRoot, "robots.txt"),
-    `# Project-scoped discovery copy; host-root crawler policy lives at https://davidahmann.github.io/robots.txt\nUser-agent: *\nAllow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Claude-SearchBot\nAllow: /\n\nUser-agent: Claude-User\nAllow: /\n\nUser-agent: Google-Extended\nAllow: /\n\nSitemap: ${site.url}/sitemap.xml\n`,
+    `# Project-scoped discovery copy; host-wide crawler policy belongs at ${new URL("/robots.txt", site.url).href}\nUser-agent: *\nAllow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Claude-SearchBot\nAllow: /\n\nUser-agent: Claude-User\nAllow: /\n\nUser-agent: Google-Extended\nAllow: /\n\nSitemap: ${site.url}/sitemap.xml\n`,
   );
   const llms = `# ${site.name}\n\n> ${site.description}\n\nCanonical repository: ${site.repository}\nLicense: Apache-2.0\n\n## Read the guide\n\n${rendered
     .map((page) => `- [${page.navTitle}](${canonicalUrl(page.route)}): ${page.description}`)

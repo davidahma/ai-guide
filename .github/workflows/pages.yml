@@ -1,9 +1,6 @@
 name: Pages
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -16,7 +13,8 @@ concurrency:
 jobs:
   build:
     name: Build site
-    runs-on: ubuntu-latest
+    if: github.repository == 'davidahma/ai-guide' && github.ref == 'refs/heads/main' && vars.PUBLISH_PAGES == 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out repository
@@ -41,7 +39,7 @@ jobs:
   deploy:
     name: Deploy site
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       pages: write

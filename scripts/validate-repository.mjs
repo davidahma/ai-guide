@@ -373,6 +373,7 @@ for (const requiredFile of requiredPublicFiles) {
   }
 }
 
+const canonicalRepositoryUrl = "https://github.com/davidahma/ai-guide";
 const retiredRepositoryUrl = ["github.com/davidahmann", "agents"].join("/");
 for (const [file, body] of contents) {
   if (body.includes(retiredRepositoryUrl)) {
@@ -392,7 +393,8 @@ const citation = contents.get(path.join(root, "CITATION.cff")) ?? "";
 for (const field of [
   "cff-version: 1.2.0",
   "title: \"The Applied AI Field Guide\"",
-  "repository-code: \"https://github.com/davidahmann/applied-ai-field-guide\"",
+  `repository-code: "${canonicalRepositoryUrl}"`,
+  `url: "${canonicalRepositoryUrl}"`,
   "license: Apache-2.0",
 ]) {
   if (!citation.includes(field)) fail(`CITATION.cff is missing required metadata: ${field}`);
@@ -421,10 +423,12 @@ for (const file of jsonFiles) {
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 const schemaFiles = jsonFiles.filter((file) => relative(file).startsWith("schemas/"));
+// JSON Schema resource identifiers remain stable across repository moves.
+const schemaIdBase = "https://github.com/davidahmann/applied-ai-field-guide";
 for (const file of schemaFiles) {
   const schema = documents.get(file);
   if (!schema) continue;
-  const expectedSchemaId = `https://github.com/davidahmann/applied-ai-field-guide/${relative(file)}`;
+  const expectedSchemaId = `${schemaIdBase}/${relative(file)}`;
   if (schema.$id !== expectedSchemaId) {
     fail(`${relative(file)} has non-canonical $id ${schema.$id ?? "<missing>"}`);
   }
@@ -440,7 +444,7 @@ if (packageMetadata) {
   if (packageMetadata.name !== "applied-ai-field-guide") fail("package.json has a non-canonical package name");
   if (packageMetadata.license !== "Apache-2.0") fail("package.json must declare Apache-2.0");
   if (packageMetadata.private !== true) fail("package.json must prevent accidental registry publication");
-  if (packageMetadata.repository?.url !== "git+https://github.com/davidahmann/applied-ai-field-guide.git") {
+  if (packageMetadata.repository?.url !== `git+${canonicalRepositoryUrl}.git`) {
     fail("package.json has a non-canonical repository URL");
   }
   if (!citation.includes(`version: ${packageMetadata.version}`)) {

@@ -13,7 +13,7 @@ The exact deterministic runtime passes all five committed regression cases in it
 | Gate | Current evidence | Decision |
 | --- | --- | --- |
 | Field boundary | Synthetic sold, observed, policy, system, and disposition sources are separated and linked | Coherent teaching reframe; replace with target evidence |
-| Value | Arithmetic and stop thresholds are explicit | Unverified forecast; no realized-value claim |
+| Value | The review-only candidate would measure packet quality and reviewer effort; the ledger-based forecast assumes later authorization | No target trial or realized-value evidence |
 | Data | The existing manifest binds four data planes for the fixture | Not target source, permission, quality, or drift evidence |
 | Mechanism | Rules, retrieval, typed proposal, human approval, transaction, and review are separated | No multi-agent justification; model proposal still requires target evaluation |
 | Evaluation | Five deterministic cases pass; prohibited, duplicate, and unverified effects are zero in-suite | Retain review status; add representative target cases and hardened execution |

@@ -5,8 +5,8 @@ type: software
 authors:
   - family-names: Ahmann
     given-names: David
-repository-code: "https://github.com/davidahmann/applied-ai-field-guide"
-url: "https://github.com/davidahmann/applied-ai-field-guide"
+repository-code: "https://github.com/davidahma/ai-guide"
+url: "https://github.com/davidahma/ai-guide"
 license: Apache-2.0
 # Local development build; no public release date is assigned.
 version: 2.4.12
