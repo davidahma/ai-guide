@@ -9,10 +9,10 @@ This record is intentionally incomplete. It shows what must be fixed before a pi
 | Eligible denominator | Domestic price-variance exceptions meeting policy revision 8 and source-quality requirements; exclude duplicate, cross-tenant, payment-execution, and unsupported-policy cases |
 | Exposure | Eligible case rendered in the persistent review queue with cited evidence |
 | Completion | Reviewer approves, edits, rejects, or explicitly escalates the proposal |
-| Accepted outcome | Approved correction matches ledger readback and the verified proposal digest |
-| Target | At least 60% of eligible cases exposed and 80% of exposed cases independently accepted in the named pilot window |
+| Accepted review packet | An independent verifier confirms the packet supports the correct disposition without material correction, including a policy-supported no-action when appropriate; rejection of an incorrect packet does not count |
+| Target | At least 60% of eligible cases exposed and 80% of exposed cases have an independently accepted review packet in the named trial window |
 | Guardrails | Zero prohibited or unverified effects; correction or rejection below 20%; abandonment below 10%; reviewer wait and support load within named capacity |
-| Sources | Queue eligibility query, review-surface events, approval record, effect receipt, ledger readback, support queue, and time study—each with a fixed revision |
+| Sources | Versioned queue eligibility query, review-surface events, case evidence and verifier dispositions, support records, and time study |
 | Owner | Accounts-payable service owner; finance controls manager verifies acceptance |
 
 The actual target dates, source queries, event schemas, timezone, late-event policy, identity-deduplication rule, baseline status, and reviewer-capacity limit remain open. That blocks pilot entry.
@@ -26,9 +26,9 @@ The current process starts in the manual exception queue. The proposed path adds
 | Eligible opportunity | Versioned query for domestic price-variance exceptions under policy revision 8, with declared exclusions | No target query or observed population |
 | Exposed in the review surface | Event proving an eligible case was rendered to an authorized reviewer with cited evidence | No implemented target surface or event |
 | Completed or dispositioned | Reviewer approves, edits, rejects, or escalates; abandonment and reason are recorded | No target users or interaction evidence |
-| Independently accepted | Approved correction matches proposal digest and ledger readback | Deterministic fixture cases only; no customer acceptance |
-| Verified business effect | Matched time study and downstream rework check | Illustrative forecast only |
-| Sustained net value | Accepted effect minus reviewer, support, assurance, incident, and operating cost | No pilot or production window |
+| Independently accepted | Verifier confirms the review packet supports the correct disposition without material correction | Deterministic fixture cases only; no target review acceptance |
+| Verified business effect | For a later authorized workflow only, approved correction matches the proposal digest and ledger readback | Not measured or authorized by the trial |
+| Sustained net value | Attributable benefit, less reviewer, support, assurance, incident, and operating cost | No pilot or production window |
 
 ## Friction hypotheses to test
 
@@ -49,7 +49,7 @@ This table is predeclared planning logic. It contains no observed pilot result.
 | Eligible -> exposed | Eligibility query, integration, access, routing, latency, or source quality is wrong | Repair the path or narrow the segment; do not call it user resistance |
 | Exposed -> completed | Surface placement, evidence, timing, training, or fallback is wrong | Observe cases and repair the workflow before adding users |
 | Completed -> accepted | Proposal quality, evidence sufficiency, policy, or authority is wrong | Repair context, mechanism, evaluation, or boundary |
-| Accepted -> business effect | The bottleneck, baseline, or attribution model is wrong | Revisit the value case or stop |
+| Accepted -> less reviewer effort | The bottleneck, baseline, or attribution model is wrong | Revisit the value case or stop |
 | Effect -> sustained net value | Review, support, incident, or operating cost is too high | Constrain the cohort, redesign operation, or stop |
 
 ## Receiving-team exercises

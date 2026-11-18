@@ -64,3 +64,7 @@
 | Test | Threshold | Fixture | Owner |
 | --- | --- | --- | --- |
 | | | | |
+
+For the quality requirement most likely to change the decision, describe the trigger, what is affected, operating conditions, expected response, and pass or hold measure. Point to a test or observation. For a worker upgrade, include a pending record written by the previous release and verify the effect through source-of-truth readback.
+
+If this decision relies on a host application or shared platform, link the [inherited foundation evidence](production-service-readiness.md#application-and-platform-baseline). Record the applicable build or configuration revision, implementing and accountable owners, target integration evidence, expiry or recheck trigger, and what stays on hold if evidence is missing or stale. See the [worked recovery review](../examples/invoice-exception/durable-recovery/README.md#worked-architecture-review-upgrade-while-work-is-pending).

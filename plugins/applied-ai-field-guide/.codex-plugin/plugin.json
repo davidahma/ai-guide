@@ -8,8 +8,8 @@
   },
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
-  "homepage": "https://davidahmann.github.io/applied-ai-field-guide/",
-  "repository": "https://github.com/davidahmann/applied-ai-field-guide",
+  "homepage": "https://github.com/davidahma/ai-guide",
+  "repository": "https://github.com/davidahma/ai-guide",
   "license": "Apache-2.0",
   "keywords": [
     "applied-ai",

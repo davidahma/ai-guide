@@ -99,7 +99,7 @@ The repository test suite parses this table and counts the named layers. Change 
 3. Run spelling, action workflow, dependency, and secret scans used by the current project.
 4. Confirm all new governed artifacts are cataloged and every new source ID resolves.
 5. Proofread README, five-minute and concise Guides, capability roadmap, AGENTS, llms, generated site routes and descriptions, playbook routes, changelog, package/citation versions, and release links.
-6. When skill discovery or packaging changes, verify `npx skills add davidahmann/applied-ai-field-guide --list` from a disposable environment; do not add this network-dependent smoke test to the deterministic CI gate.
+6. When skill discovery or packaging changes, verify `npx skills add davidahma/ai-guide --list` from a disposable environment; do not add this network-dependent smoke test to the deterministic CI gate.
 7. When the local plugin changes, run `npm run plugin:validate` and the official plugin validator in a disposable Python environment if the host supplies one. If no official validator is available, record that limitation and require successful installation through the supported host CLI; do not label repository checks as official host validation. Install locally from the trusted release tree, verify the installed version and enabled state, start a fresh process or task, and verify STDIO initialization plus one read and one contained write without customer data. For identity or configuration moves, follow the [2.0 migration](../migrations/applied-ai-field-guide-2.0.md) and verify that existing engagement files are unchanged.
 8. Use a scoped commit and draft pull request; do not bypass protected `main`.
 9. Require CI and review before merge; tag only after the release tree and metadata agree.
@@ -108,13 +108,14 @@ The repository test suite parses this table and counts the named layers. Change 
 
 - Treat repository Markdown as the only content source. Add a route in `site/site.config.mjs` only when the source answers a distinct reader question.
 - Keep page titles and descriptions specific, factual, and unique. Do not add keyword lists, synthetic FAQs, duplicate articles, or claims about search ranking.
-- Run `npm run test:site`, then inspect representative desktop and mobile renders before publishing a UI or navigation change.
+- Run `npm run test:site`, then inspect representative desktop and mobile renders before publishing a UI or navigation change. To preview locally, run `python3 -m http.server 8000 --bind 127.0.0.1 --directory site-dist` and open `http://127.0.0.1:8000/`.
 - For interactive changes, provision Playwright with Chromium, build the site, then run `node scripts/check-site-browser.mjs`. `PLAYWRIGHT_MODULE` can point to a preinstalled module; `SITE_SCREENSHOT_DIRECTORY` optionally retains desktop/mobile captures. This additional browser lane exercises real search/close behavior and the practice review flow; it is separate from the dependency-light deterministic CI gate.
-- The Pages workflow builds `site-dist/` in CI and deploys only that artifact. Do not commit generated output.
+- The validation workflow runs the full test suite, including the site build, with read-only repository access. It never publishes. The separate Pages workflow builds and deploys only `site-dist/`. Do not commit generated output.
+- To publish deliberately, configure the repository to [deploy Pages through GitHub Actions](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages), set the repository variable `PUBLISH_PAGES` to `true`, and manually run **Pages** on `main`. Keep Pages disabled when only the repository is public.
 - Keep `robots.txt`, `sitemap.xml`, structured metadata, the generated web `llms.txt`, and visible source links bound to the same route map.
-- GitHub Pages serves this repository under a project path. Its generated `robots.txt` documents intended project discovery but does not control the `davidahmann.github.io` host root; manage host-wide crawler policy separately.
+- The default Pages project base is `https://davidahma.github.io/ai-guide/`. The generated `robots.txt` documents project discovery but does not control the host-root `robots.txt`; manage host-wide crawler policy separately.
 - After deployment, verify the canonical URL, core assets, sitemap, crawler policy, and a deep route over HTTPS. Use Search Console or equivalent measurement after ownership is configured; do not infer ranking from a successful deployment.
-- After a repository rename, verify the previous GitHub Pages project base separately. Current-site aliases cannot serve the previous base. If it no longer resolves, maintain a minimal public redirect stub under the old repository name; it should contain only a canonical link and redirect to the new base, not a forked copy of the guide.
+- Current-site aliases cannot serve an older Pages project base. If the earlier host is available and a redirect is authorized, publish only a canonical link and redirect there, not a second copy of the guide.
 
 ## Social preview procedure
 

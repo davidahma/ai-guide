@@ -4,6 +4,10 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+- Prepare `davidahma/ai-guide` as the public repository. Rework the README and first-use routes, keep CI focused on the validation suite, and make Pages opt-in.
+- Separate review-only acceptance from later ledger corrections, correct cost and latency measures, and add a worked hold decision for a canary with insufficient evidence.
+- Exercise pending-state recovery across processes and compare shipment prioritization methods at equal reviewer capacity with point-in-time inputs. Add a portfolio choice and a peer handoff exercise; no target deployment or outcome is claimed.
+- Patch audited Markdown and diagram dependencies, refresh the teaching evaluation bindings, and synchronize the packaged guide.
 - Make inherited application and platform foundations explicit in production readiness: name implementation and receiving owners, configuration revisions, applicable security checks, and target integration evidence. Add account-recovery, queued-revocation, restore/readback, and UI-correction test prompts without imposing a universal SaaS checklist.
 - Extend the existing reference-standards note with a dated OWASP review and update the readiness skill and plugin search coverage. Refresh the local plugin as development version `2.4.12`; no public release is made.
 - Add decision-critical evidence checks across extraction, ranking, summarization, and handoff. Paired omission cases check the downstream decision or fallback while preserving source authority and access limits.

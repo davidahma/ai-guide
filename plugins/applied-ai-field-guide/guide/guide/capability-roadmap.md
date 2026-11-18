@@ -109,7 +109,7 @@ Choose one bounded workflow you can observe. Do not begin with an agent idea.
 2. Record the trigger, decision, working interface, actors, sources, permitted action, current result, and owner.
 3. Define an accepted outcome and credible verifier.
 4. Estimate the eligible population, baseline, full cost, residual loss, and adoption constraints.
-5. Decide `discover`, `defer`, or `do_not_build`; recommend `pilot` only after the value case is plausible.
+5. Decide `discover`, `defer`, or `do_not_build`. Recommend `pilot` only when the [four hard gates](ai-value-engineering-scorecard.md#start-with-four-hard-gates) pass: an owned outcome, a credible verifier, bounded authority and expected loss, and plausible positive value after full cost. Release approval is separate.
 
 **Finish with:** an [observation log](../templates/field-observation-log.md), [workflow charter](../templates/workflow-charter.json), and [value case](../templates/value-case.md) another person can challenge.
 
@@ -149,6 +149,14 @@ Treat launch as the start of a recurring decision.
 5. Record recurring field learning without copying private policy, data, identities, or confidential context across its approved boundary.
 
 **Finish with:** an exercised [service review](../templates/production-service-review.md), [customer handoff](../templates/customer-enablement-handoff.md), and owned improvement or retirement decision.
+
+### Practice a portfolio decision and a handoff
+
+Suppose a program lead can sponsor one new evidence check this week. The [invoice team](../examples/invoice-exception/engagement/value-case.md) has a review-only design and a conditional forecast for a later ledger workflow. Its write boundary still needs controller approval. The [shipment team](../examples/shipment-risk-triage/README.md) has an offline rule that found more known late shipments under the same reviewer budget, but no live evidence it prevented a delay.
+
+Have the operations lead run the shipment comparison on a second, untouched set of representative, time-stamped cases, with the normal supervisor review and no automated shipment changes. Defer the invoice rollout and keep the manual queue while the controller decides what can be tested. If the shipment team cannot reconstruct what was known at ranking time or spare reviewer capacity, stop that test and revisit the allocation. Record the choice and its owner in the [portfolio review](../templates/workflow-portfolio-review.md). Neither result alone funds rollout.
+
+For the handoff, give a peer just the decision record and runbook. Ask them to explain what would change the decision, rerun a case that must block, and take over one pending case in a disposable environment. Record where they needed the original builder. A handoff is not complete while the backup still depends on that person to finish the job.
 
 ## The quick-start engagement pack
 
