@@ -4,11 +4,47 @@ import test from "node:test";
 import { corpus } from "./corpus.mjs";
 import { createEmbeddingHybridCandidate, createOpenAICompatibleEmbedder } from "./embedding-hybrid.mjs";
 import { expectations, gradeCase } from "./grade.mjs";
+import { runLifecycle } from "./lifecycle.mjs";
 import { queries } from "./queries.mjs";
 import { admissibleDocuments, retrieve } from "./retriever.mjs";
 import { evaluate, evaluateAsync } from "./run-evaluation.mjs";
 
 const query = (id) => queries.find(({ case_id }) => case_id === id);
+
+test("the lifecycle passes current, corrected and withdrawn reads at verified snapshots", () => {
+  const { stages, scope, disposition } = runLifecycle();
+  assert.deepEqual(stages.map(({ verdict }) => verdict), ["PASS", "PASS", "PASS"]);
+  assert.deepEqual(stages.map(({ read }) => read.snapshot.index_revision), [1, 2, 3]);
+  assert.deepEqual(stages.map(({ read }) => read.snapshot.applied_source_revision), [3, 4, 5]);
+  assert.deepEqual(stages.slice(1).map(({ delayed_write }) => delayed_write), ["skipped_stale", "skipped_stale"]);
+  assert.deepEqual(stages.map(({ read }) => read.unaffected_control.source_id),
+    ["credit-note-guide-v1", "credit-note-guide-v1", "credit-note-guide-v1"]);
+  assert.equal(stages[2].read.search.length, 0);
+  assert.equal(stages[2].read.reader_summary, null);
+  assert.ok(scope.not_tested.includes("backup copies"));
+  assert.equal(disposition, "inconclusive_for_deployment");
+});
+
+test("a correct first result can conceal stale lower ranks and a stale summary", () => {
+  const { stages } = runLifecycle({ guardDelayedWrite: false });
+  const correction = stages[1];
+  assert.deepEqual(correction.read.search.map(({ rank, source_revision }) => [rank, source_revision]), [[1, "4"], [2, "3"]]);
+  assert.equal(correction.read.reader_summary.source_revision, "3");
+  assert.equal(correction.verdict, "FAIL");
+  assert.deepEqual(correction.findings, ["stale_search_evidence", "stale_or_missing_summary"]);
+  assert.equal(stages[2].delayed_write, "written");
+  assert.equal(stages[2].verdict, "PASS");
+});
+
+test("withdrawn content must not reach the reader and unknown snapshots cannot pass", () => {
+  const unsafe = runLifecycle({ guardDelayedWrite: false, enforceCurrentAccess: false });
+  assert.equal(unsafe.stages[2].verdict, "FAIL");
+  assert.deepEqual(unsafe.stages[2].findings, ["withdrawn_evidence_visible"]);
+  const unverified = runLifecycle({ reportSnapshot: false });
+  assert.ok(unverified.stages.every(({ verdict }) => verdict === "NOT TESTED"));
+  const visibleFailure = runLifecycle({ reportSnapshot: false, guardDelayedWrite: false });
+  assert.equal(visibleFailure.stages[1].verdict, "FAIL");
+});
 
 test("BM25 output is deterministic and one vocabulary mismatch stays visible", () => {
   const first = evaluate();

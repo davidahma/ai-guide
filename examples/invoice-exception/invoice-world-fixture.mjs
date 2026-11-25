@@ -71,6 +71,7 @@ export function createInvoiceWorld(options = {}) {
   const approvals = new Map();
   const policyDecisions = new Map();
   const effects = new Map();
+  const appliedResolutions = new Map();
   const receipts = new Set();
   const events = [];
   const actions = [];
@@ -461,6 +462,14 @@ export function createInvoiceWorld(options = {}) {
       if (!boundaryDecision.allow) {
         throw boundaryError("commit_resolution", "POLICY_DENIED", `commit boundary denied: ${boundaryDecision.reason_code}`, false);
       }
+      const expectedPostconditionDigest = referenceInternals.digest({
+        status: "resolved",
+        resolution_count: 1,
+        applied_proposal_digest: request.proposal_digest,
+      });
+      if (request.expected_postcondition_digest !== expectedPostconditionDigest) {
+        throw boundaryError("commit_resolution", "DIGEST_MISMATCH", "postcondition is not bound to the staged proposal", false);
+      }
 
       if (!effects.has(request.idempotency_key)) {
         if (effects.size > 0) record("create_second_resolution");
@@ -489,8 +498,8 @@ export function createInvoiceWorld(options = {}) {
           policy_decision_id: request.policy_decision_id,
           policy_revision: request.policy_revision,
           approval_id: request.approval_id,
-          expected_postcondition_digest: request.expected_postcondition_digest,
-          committed_at: deps.now(),
+          expected_postcondition_digest: expectedPostconditionDigest,
+          committed_at: options.committedAt ?? deps.now(),
         };
         const serviceReceipt = signedAttestation("accounts-payable-ledger", receiptSubject);
         if (options.forgeServiceReceipt) serviceReceipt.signature = "A".repeat(86);
@@ -501,6 +510,14 @@ export function createInvoiceWorld(options = {}) {
         };
         effects.set(request.idempotency_key, effect);
         receipts.add(effect.service_receipt.subject_digest);
+        const appliedProposal = options.appliedProposal ?? stagedProposal.request.proposal;
+        appliedResolutions.set(expectedOperationId, referenceInternals.digest({
+          tenant_id: request.tenant_id,
+          invoice_id: request.invoice_id,
+          invoice_revision: stagedProposal.request.invoice_revision,
+          policy_revision: stagedProposal.request.policy_revision,
+          proposal: appliedProposal,
+        }));
         effectCreations += 1;
         invoice.status = "resolved";
       }
@@ -569,14 +586,15 @@ export function createInvoiceWorld(options = {}) {
         invoice_id: invoice.invoice_id,
         revision: invoice.revision,
         status: options.readbackMatches === false ? "exception" : invoice.status,
-        resolution_count: 1,
+        resolution_count: appliedResolutions.size,
+        applied_proposal_digest: appliedResolutions.get(request.operation_id) ?? null,
         last_effect: clone(matchedEffect),
       };
-      const expectedPostconditionDigest = result.last_effect?.service_receipt?.subject?.expected_postcondition_digest
-        ?? referenceInternals.digest({ status: "resolved", resolution_count: 1 });
+      const expectedPostconditionDigest = signedEffect.expected_postcondition_digest;
       const observedPostconditionDigest = referenceInternals.digest({
         status: result.status,
         resolution_count: result.resolution_count,
+        applied_proposal_digest: result.applied_proposal_digest,
       });
       const subject = {
         run_id: request.run_id,

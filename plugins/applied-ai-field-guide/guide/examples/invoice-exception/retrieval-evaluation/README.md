@@ -16,6 +16,23 @@ node examples/invoice-exception/retrieval-evaluation/run-evaluation.mjs
 
 The command prints a report for ten public synthetic queries. Expect zero authorization, stale-source, citation, instruction-authority, and budget violations. Also expect one failed vocabulary-mismatch case. That miss is deliberate: a lexical baseline should not look perfect because the fixture was written around its tokenizer.
 
+### Replay correction and withdrawal
+
+```bash
+node examples/invoice-exception/retrieval-evaluation/lifecycle.mjs
+```
+
+A worker holds revision 3 of AP-17 while the controller publishes revision 4. The fixture releases that delayed write, then withdraws AP-17 and releases the same write again. Each read records the index snapshot and the source revision the index says it applied. An independent fixture checks the whole ranked list, the reader summary, and an unrelated credit-note result in the same index.
+
+| Scenario | Expected observation |
+| --- | --- |
+| Guarded writer and current access check | Correction and withdrawal both pass. The credit-note result remains available. |
+| Stale writer with current access check | Correction fails. Rank one has revision 4, but rank two and the reader summary carry revision 3. The current access check still prevents return of the withdrawn policy. |
+| Stale writer without a current access check | Withdrawal fails. Search and the reader summary can return revision 3 after access was withdrawn. |
+| Guarded writer without a snapshot identifier | The otherwise clean reads are `NOT TESTED`. The observations cannot be tied to the required source revision. |
+
+The report names what it exercised and lists uninspected backup copies, physical erasure, and other derived stores. A pass describes the caller-visible paths on the observed fixture revision. See the [research note on data lifecycle checks](../../../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-96).
+
 ### Optional hybrid comparison
 
 The baseline is the default because it is dependency-free and never makes a network call. A reader can explicitly run an OpenAI-compatible embeddings endpoint through the optional candidate:

@@ -16,8 +16,8 @@ const base = new URL(site.url).pathname.replace(/\/$/, "");
 const server = createServer(async (request, response) => {
   try {
     const requested = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
-    if (!requested.startsWith(`${base}/`)) throw new Error("outside site");
-    let file = path.resolve(root, `.${requested.slice(base.length)}`);
+    const relativeRequest = base && requested.startsWith(`${base}/`) ? requested.slice(base.length) : requested;
+    let file = path.resolve(root, `.${relativeRequest}`);
     if (file !== root && !file.startsWith(`${root}${path.sep}`)) throw new Error("outside site");
     if ((await stat(file)).isDirectory()) file = path.join(file, "index.html");
     const types = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
@@ -89,6 +89,15 @@ try {
     await context.close();
   }
   const page = await browser.newPage();
+  for (const mount of new Set(["", base])) {
+    await page.goto(`${origin}${mount}/practice/invoice-review/`);
+    await page.getByRole("button", { name: /search/i }).first().click();
+    await page.locator("#site-search-input").fill("invoice policy retrieval evaluation lab");
+    const retrieval = page.locator(".search-result").getByRole("link", { name: /AI Retrieval Evaluation Lab: Invoice Policy Evidence/i }).first();
+    assert.equal(await retrieval.getAttribute("href"), `${origin}${mount}/practice/invoice-policy-retrieval/`);
+    await retrieval.click();
+    await page.getByRole("heading", { name: "Invoice Policy Retrieval Evaluation Lab", exact: true }).waitFor();
+  }
   await page.route("**/search-index.json", (route) => route.abort());
   await page.goto(`${origin}${base}/`); await page.getByRole("button", { name: /search/i }).first().click();
   await page.getByText(/Search is unavailable/).waitFor(); await page.getByRole("button", { name: "Close", exact: true }).click();

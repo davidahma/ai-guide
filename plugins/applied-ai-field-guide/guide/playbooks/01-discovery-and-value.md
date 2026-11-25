@@ -229,6 +229,16 @@ Score each dimension from `0` to `4`, and attach evidence:
 
 Assess workflow clarity, context ownership/freshness, verifier quality, integration contracts, user adoption, risk controls, and production operations. A total score is not a release gate. A zero in verifier quality is blocking; missing authenticated authority, accountable operational/service ownership, or a lawful data path is a hard-gate failure outside the score.
 
+Use each assessment at the decision it supports:
+
+| Assessment | Decision it supports | How to use the result |
+| --- | --- | --- |
+| Opportunity ranking in [Step 1](#1-qualify-before-discovery) | Which eligible opportunity should we investigate first? | Compare or weight qualified candidates by impact, effort, and time to evidence. Keep disqualifying gaps explicit. |
+| Readiness ratings from `0` to `4` | What must be observed or tested before chartering this workflow? | Keep the rating and evidence for each dimension visible. Resolve blocking gaps before moving forward. |
+| [Value Engineering Scorecard](../guide/ai-value-engineering-scorecard.md) | Should we fund, continue, constrain, or stop this particular workflow? | Read the `0` to `2` assessments by factor and apply the four hard gates individually. |
+
+An apparently high-impact invoice workflow stays in discovery when no verifier can accept its outcome. Even after naming a verifier, the [worked value case](../examples/invoice-exception/engagement/value-case.md#graduation-thresholds) shows why financial graduation depends on positive net value across the whole measured cohort.
+
 ## 9. Charter or stop
 
 Complete the machine-readable [workflow charter](../templates/workflow-charter.json). The charter records:

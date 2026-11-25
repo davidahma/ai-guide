@@ -48,6 +48,17 @@ async function temporaryJson(name, value) {
   return target;
 }
 
+test("single-artifact validation rejects repeated decoded object keys", async () => {
+  const body = await readFile(path.join(root, "examples/invoice-exception/workflow-charter.json"), "utf8");
+  const target = await temporaryJson("external.json", {});
+  const duplicate = body.replace('"workflow_id":', String.raw`"workflow_\u0069d":null,"workflow_id":`);
+  assert.notEqual(body, duplicate);
+  await writeFile(target, duplicate);
+  const result = await validateArtifact({ file: target, type: "workflow-charter" });
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /duplicate object key "workflow_id"/);
+});
+
 test("starter workflow validation requires decision-bearing fields without forking the canonical schema", async () => {
   const starter = {
     workflow_id: "invoice_exception_resolution",

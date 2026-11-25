@@ -22,6 +22,8 @@ This page is guidance—not production approval, customer authority, or a substi
 | **Staff the next test** | Use the [staffing view](capability-roadmap.md#staff-the-workflow-you-have) to check actual availability and separation of duties. | Named people, decision rights, reviewer time, and a backup |
 | **Something was built, but nobody will accept or own it** | Stop adding features. Check acceptance evidence, operating ownership, rollback, support, and transfer with [production readiness](../templates/production-service-readiness.md) and the [customer handoff](../templates/customer-enablement-handoff.md). | A named gap, owner, and decision to repair, constrain, transfer, pause, or retire |
 
+For a quick result you can inspect, [replay interrupted invoice work](../examples/invoice-exception/durable-recovery/README.md#run-it). Expect four stored-effect counts in order: `1, 0, 0, 1`. Then [open the browser review exercise](../examples/invoice-exception/document-review/practice.md#round-2-observe-difficult-documents), correct one draft, and export the practice record. Both paths work with synthetic inputs and no model key.
+
 ## Before you design anything
 
 Ask the person who does or repairs the work to show you a recent exception. Watch the handoffs, judgment calls, policy checks, and quiet workarounds.

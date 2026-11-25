@@ -38,8 +38,8 @@ Use a bounded ML delay-risk score only to inform a deterministic routing policy.
 | Missing/stale shipment or carrier evidence | Escalate to manual triage; do not score or create a review case |
 | Invalid, unavailable, or drifting model | Escalate or use the measured manual baseline; emit route-level alert |
 | Explanation failure or unsafe output | Keep the policy route and use a deterministic evidence summary |
-| Review-case service failure | Retry only with an idempotency key; otherwise escalate with no shipment intervention |
-| Cost/review-load ceiling exceeded | Stop explanation route first, then narrow or pause the ML segment |
+| Review-case service failure or mismatched receipt | Reconcile the staged case. Retry only with the same idempotency key and proposal. A changed proposal under the same key escalates. |
+| Cost/review-load ceiling exceeded | Check metered cost before explanation and again before staging. Use manual triage when the budget is exhausted. |
 
 ## Release and rollback
 

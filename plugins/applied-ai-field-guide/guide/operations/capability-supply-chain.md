@@ -41,6 +41,12 @@ The registry MUST fail closed when signature, publisher, policy, or provenance v
 - A capability cannot alter its manifest, registry decision, evaluator, CI, approval, or merge authority.
 - Each invocation records capability ID/version/digest, actor, tenant, policy decision, data class, effect class, and result.
 
+## Example: remotely supplied skills
+
+The [MCP Skills beta](https://skills.extensions.modelcontextprotocol.io/specification/beta/skills#security-considerations) supplies remote instruction and file transport. Apply the registry decision above to the selected capability before activation. Record remote server and publisher identity, origin URI, manifest and file digests, effective permission scope, and review expiry. Preserve origin and exact content identity when writing to cache and reopening across sessions. Resolve a locally installed skill and a remote skill with the same display name as different capabilities.
+
+A renewed fetch that changes a bound artifact requires fresh admission and approval. Treat permission expansion or an executable transition as a separate decision for that exact skill. Recheck disabled origin, digest, and scope before activation or invocation even when content is cached. Verify a same-name collision, cache reload after process restart, changed content digest, revoked origin, and an unapproved transition to tool or script execution. Keep network use and installation out of the deterministic example. `TOL-006`, `SEC-007`. [R26-98](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-98)
+
 ## Disable and recovery
 
 1. Deny new invocations by capability digest.

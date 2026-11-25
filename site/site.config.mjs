@@ -99,6 +99,7 @@ for (const directory of ["library", "templates", "playbooks", "operations", "exa
     const area = directory.startsWith("examples") ? "Invoice practice" : directory[0].toUpperCase() + directory.slice(1);
     pages.push({ source, route: practice ? "/practice/invoice-review/" : `/study/${source.replace(/\.md$/, "").toLowerCase()}/`,
       navTitle: heading, title: `${heading} · ${area}`,
+      ...(practice && { legacyAnchors: { "round-5-a-narrow-path-earns-a-limited-pilot": "round-5-evidence-for-a-limited-pilot-proposal" } }),
       description: `Read ${heading.slice(0, 55)}: ${area.toLowerCase()} guidance with evidence limits, practical checks and editable source material.` });
   }
 }

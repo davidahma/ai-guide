@@ -268,13 +268,22 @@ export async function writeImmutableFile(root, candidate, content, maxBytes) {
   let handle;
   try {
     handle = await open(candidate, "wx", 0o600);
-    await handle.writeFile(body);
-    await handle.sync();
   } catch (error) {
     if (error?.code === "EEXIST") throw new GuideError("IMMUTABLE_CONFLICT", "the immutable target already exists");
     throw error;
-  } finally {
-    await handle?.close();
+  }
+  try {
+    await handle.writeFile(body);
+    await handle.sync();
+    await handle.close();
+  } catch (error) {
+    await handle.close().catch(() => {});
+    await unlink(candidate).catch((cleanupError) => {
+      if (cleanupError?.code !== "ENOENT") {
+        process.stderr.write("[applied-ai-mcp] uncommitted immutable file cleanup degraded\n");
+      }
+    });
+    throw error;
   }
   return { bytes: body.byteLength, digest: digest(body) };
 }
@@ -372,30 +381,40 @@ async function atomicWriteJson(target, value) {
     await writeFile(temporary, body, { mode: 0o600, flag: "wx" });
     await chmod(temporary, 0o600);
     await rename(temporary, target);
-  } finally {
-    await unlink(temporary).catch((error) => {
-      if (error?.code !== "ENOENT") throw error;
-    });
+  } catch (error) {
+    if (error?.code !== "EEXIST") {
+      await unlink(temporary).catch((cleanupError) => {
+        if (cleanupError?.code !== "ENOENT") process.stderr.write("[applied-ai-mcp] temporary state cleanup degraded\n");
+      });
+    }
+    throw error;
   }
 }
 
 async function appendAuditMirror(root, target, event) {
   let handle;
+  let status = "degraded";
   try {
     await rejectSymlinkPath(root, target, true);
-    handle = await open(target, fsConstants.O_APPEND | fsConstants.O_CREAT | fsConstants.O_WRONLY | fsConstants.O_NOFOLLOW, 0o600);
+    handle = await open(target, fsConstants.O_APPEND | fsConstants.O_CREAT | fsConstants.O_WRONLY
+      | fsConstants.O_NOFOLLOW | fsConstants.O_NONBLOCK, 0o600);
     const metadata = await handle.stat();
     if (!metadata.isFile() || metadata.nlink !== 1) throw new GuideError("AUDIT_TARGET_DENIED", "audit mirror must be a singly linked regular file");
     await handle.writeFile(`${JSON.stringify(event)}\n`);
     await handle.sync();
     await handle.chmod(0o600);
-    return "written";
+    status = "written";
   } catch (error) {
     process.stderr.write(`[applied-ai-mcp] audit mirror degraded: ${error?.message || error}\n`);
-    return "degraded";
   } finally {
-    await handle?.close();
+    try {
+      await handle?.close();
+    } catch {
+      process.stderr.write("[applied-ai-mcp] audit mirror close degraded\n");
+      status = "degraded";
+    }
   }
+  return status;
 }
 
 async function withEngagementLock(paths, operation) {
@@ -409,16 +428,20 @@ async function withEngagementLock(paths, operation) {
       await new Promise((resolve) => setTimeout(resolve, lockRetryMs));
       continue;
     }
+    let result;
+    let cleanupDegraded = false;
     try {
       await handle.writeFile(`${JSON.stringify({ pid: process.pid, created_at: new Date().toISOString() })}\n`);
       await handle.sync();
-      return await operation();
+      result = await operation();
     } finally {
-      await handle.close();
+      await handle.close().catch(() => { cleanupDegraded = true; });
       await unlink(lockPath).catch((error) => {
-        if (error?.code !== "ENOENT") throw error;
+        if (error?.code !== "ENOENT") cleanupDegraded = true;
       });
+      if (cleanupDegraded) process.stderr.write("[applied-ai-mcp] engagement lock cleanup degraded\n");
     }
+    return cleanupDegraded ? { ...result, lock_cleanup_status: "degraded" } : result;
   }
   throw new GuideError("ENGAGEMENT_BUSY", `engagement ${paths.id} is busy; retry the operation with the same operation_id`);
 }

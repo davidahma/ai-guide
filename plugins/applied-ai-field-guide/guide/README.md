@@ -52,7 +52,7 @@ npm run test:durable-recovery
 
 | Example | What to inspect |
 | --- | --- |
-| [Invoice review](examples/invoice-exception/document-review/README.md) | An amount that passes format checks but differs from the source |
+| [Invoice browser review](examples/invoice-exception/document-review/practice.md#round-2-observe-difficult-documents) | Correct a draft against the source and export the decision |
 | [Invoice policy retrieval](examples/invoice-exception/retrieval-evaluation/README.md) | A passage can be relevant and still be stale, unauthorized, or unsupported |
 | [Shipment-risk triage](examples/shipment-risk-triage/README.md#compare-three-ways-to-rank-the-review-queue) | Queue order, a rule, and a fitted score competing for the same reviewer time |
 | [Finance variance commentary](examples/finance-variance-commentary/README.md) | Code calculates, department owners explain, finance approves |
@@ -91,13 +91,13 @@ After the workflow and value are accepted, choose a [business-flow pattern](solu
 
 ## Optional: use it with a coding agent
 
-The guide is complete as documentation. Sixteen optional skills provide focused routes over the same canonical artifacts:
+The guide is complete as documentation. To install its sixteen optional skills, run from your project with Node.js 22.20 or later:
 
 ```bash
-npx skills add davidahma/ai-guide
+npx skills@1.9.0 add davidahma/ai-guide@v2.5.0
 ```
 
-Pin the source. Skills grant no authority or evidence. Give an agent [AGENTS.md](AGENTS.md).
+Commit the lockfile so a restore uses the recorded commit. Skills grant no authority or evidence. Give an agent [AGENTS.md](AGENTS.md).
 
 The [Applied AI Field Guide local plugin](plugins/applied-ai-field-guide/README.md) adds local continuity for sources, revisions, decisions, dependencies, and review packets. Keep restricted content in its approved source system; local execution is not permission to copy it.
 

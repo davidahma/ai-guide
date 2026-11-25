@@ -73,7 +73,12 @@ export function createShipmentRiskWorld(options = {}) {
         throw Object.assign(new Error("stale evidence"), { code: "STALE_EVIDENCE" });
       }
       const existing = state.reviewByOperation.get(request.business_operation_id);
-      if (existing) return copy(existing);
+      if (existing) {
+        if (existing.proposal_digest !== request.proposal_digest) {
+          throw Object.assign(new Error("operation already has a different proposal"), { code: "IDEMPOTENCY_CONFLICT" });
+        }
+        return copy(existing);
+      }
       const reviewCase = { proposal_id: `case-${state.reviewCases.length + 1}`, proposal_digest: request.proposal_digest, status: "staged" };
       state.reviewCases.push({ ...copy(request), ...reviewCase });
       state.reviewByOperation.set(request.business_operation_id, reviewCase);

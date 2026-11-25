@@ -11,10 +11,14 @@ import {
   embeddedToolSchemaErrors,
   changeImpactAssessmentSemanticErrors,
   evaluationCaseSemanticErrors,
+  evaluationLabelAdmissionErrors,
   evaluationReportSemanticErrors,
   expectedEvaluationOutputDigest,
   ontologyIdentityErrors,
   patternCatalogErrors,
+  promotionQualificationErrors,
+  qualificationExecutionErrors,
+  sha256Digest,
   solutionReleaseSemanticErrors,
   systemMapManifestSemanticErrors,
   toolContractSemanticErrors,
@@ -368,12 +372,26 @@ test("evaluation reports bind a frozen human-AI policy to held-out qualification
   qualification.rationale = "The frozen terminal policy clears the declared reliability bound on disjoint held-out cases.";
   qualification.oversight_policy.frozen_before_qualification = true;
   qualification.execution_mode = "terminal_replay";
+  qualification.execution_evidence = {
+    segment: fixture.population.segments[0],
+    effect_class: "reversible",
+    policy_uri: "policy.json",
+    observations_uri: "observations.json",
+    observations_digest: sha256Digest("observations"),
+  };
+  const development = [{ case_id: "dev_case", group_id: "dev_group" }];
+  const holdout = Array.from({ length: 400 }, (_, index) => {
+    const suffix = String(index).padStart(3, "0");
+    return { case_id: `test_${suffix}`, group_id: `group_${suffix}` };
+  });
+  qualification.evidence_partitions.development.digest = sha256Digest(development);
+  qualification.evidence_partitions.qualification.digest = sha256Digest(holdout);
   qualification.operating_point = {
     target_reliability: 0.95,
     observed_reliability: 0.98,
-    reliability_lower_bound: 0.96,
+    reliability_lower_bound: 0.9648554056248161,
     confidence: 0.95,
-    confidence_method: "one-sided exact binomial bound",
+    confidence_method: "one_sided_wilson",
     autonomous_coverage: 0.7,
     human_review_burden: 0.3,
     routing_signal_quality: "Measured precision and recall on the qualification partition",
@@ -391,6 +409,68 @@ test("evaluation reports bind a frozen human-AI policy to held-out qualification
 
   assert.equal(validate(fixture), true, JSON.stringify(validate.errors));
   assert.deepEqual(evaluationReportSemanticErrors(fixture, "fixture"), []);
+  const execution = {
+    segment: qualification.execution_evidence.segment,
+    effect_class: "reversible",
+    execution_mode: "terminal_replay",
+    policy_digest: qualification.oversight_policy.digest,
+    environment_digest: fixture.system.environment.environment_digest,
+    grader_digest: fixture.evaluator.grader.digest,
+    frozen_at: "2025-01-01T00:00:00Z",
+    started_at: "2025-01-01T00:01:00Z",
+    completed_at: "2025-01-01T00:02:00Z",
+    development,
+    qualification: holdout,
+    results: holdout.map(({ case_id }, index) => ({ case_id, accepted: index < 392, reviewed: index < 120 })),
+  };
+  assert.deepEqual(qualificationExecutionErrors(fixture, execution), []);
+  const inLoop = structuredClone(fixture);
+  inLoop.deployment_qualification.oversight_policy.trajectory_invariant = false;
+  inLoop.deployment_qualification.execution_mode = "policy_in_loop_rerun";
+  assert.equal(validate(inLoop), true, JSON.stringify(validate.errors));
+  assert.deepEqual(qualificationExecutionErrors(inLoop, { ...execution, execution_mode: "policy_in_loop_rerun" }), []);
+
+  const notExecuted = structuredClone(fixture);
+  notExecuted.deployment_qualification.execution_mode = "not_executed";
+  assert.equal(validate(notExecuted), false);
+  const sameDigest = structuredClone(fixture);
+  sameDigest.deployment_qualification.evidence_partitions.development.digest = qualification.evidence_partitions.qualification.digest;
+  assert.match(evaluationReportSemanticErrors(sameDigest).join("\n"), /partition digests must differ/);
+  const overlap = structuredClone(execution);
+  overlap.development[0].group_id = holdout[0].group_id;
+  assert.match(qualificationExecutionErrors(fixture, overlap).join("\n"), /leakage groups overlap/);
+  const impossibleBound = structuredClone(fixture);
+  impossibleBound.deployment_qualification.operating_point.reliability_lower_bound = 0.99;
+  assert.match(evaluationReportSemanticErrors(impossibleBound).join("\n"), /exceeds the observed reliability/);
+  const unmatchedResults = structuredClone(execution);
+  unmatchedResults.results[0].accepted = false;
+  assert.match(qualificationExecutionErrors(fixture, unmatchedResults).join("\n"), /differs from the held-out results/);
+  const release = {
+    target_segments: [execution.segment],
+    release_status: "approved",
+    rollout: { strategy: "canary", traffic_percent: 10 },
+    authority_expansion: {
+      segment: execution.segment, effect_class: execution.effect_class, policy_digest: execution.policy_digest,
+      success_metric: qualification.workflow_success_metric, minimum_reliability: qualification.operating_point.target_reliability,
+    },
+  };
+  assert.deepEqual(promotionQualificationErrors(release, fixture, ["reversible"]), []);
+  assert.match(promotionQualificationErrors(release, fixture, ["irreversible"]).join("\n"), /canary must limit admitted effects/);
+  assert.match(promotionQualificationErrors({
+    ...release, rollout: { ...release.rollout, strategy: "bounded_segment" },
+  }, fixture, ["irreversible"]).join("\n"), /exact segment, effect class/);
+  assert.match(promotionQualificationErrors(
+    { ...release, authority_expansion: undefined }, fixture, ["reversible"],
+  ).join("\n"), /requires explicit authority qualification/);
+  assert.match(promotionQualificationErrors({
+    ...release,
+    authority_expansion: { ...release.authority_expansion, minimum_reliability: 0.9 },
+  }, fixture, ["reversible"]).join("\n"), /success threshold/);
+  assert.match(promotionQualificationErrors(release, {}).join("\n"), /exact segment, effect class, frozen policy and success threshold/);
+  assert.match(promotionQualificationErrors({
+    ...release,
+    authority_expansion: { ...release.authority_expansion, effect_class: "irreversible" },
+  }, fixture).join("\n"), /exact segment, effect class, frozen policy and success threshold/);
 
   const weakBound = structuredClone(fixture);
   weakBound.deployment_qualification.operating_point.reliability_lower_bound = 0.94;
@@ -407,6 +487,19 @@ test("evaluation reports bind a frozen human-AI policy to held-out qualification
   const tunedOnHoldout = structuredClone(fixture);
   tunedOnHoldout.deployment_qualification.evidence_partitions.disjoint = false;
   assert.equal(validate(tunedOnHoldout), false);
+});
+
+test("label admission checks the decision date without expiring historical replay", async () => {
+  const fixture = await json("examples/invoice-exception/evals/authorized-commit.json");
+  assert.deepEqual(evaluationLabelAdmissionErrors(fixture, "2026-08-07T19:00:00Z"), []);
+  assert.deepEqual(evaluationLabelAdmissionErrors(fixture, "2027-02-07T23:59:59Z"), []);
+  assert.match(evaluationLabelAdmissionErrors(fixture, "2027-02-08T00:00:00Z").join("\n"), /overdue/);
+  fixture.reference_authority.review_due = "2027-08-01";
+  assert.deepEqual(evaluationLabelAdmissionErrors(fixture, "2027-02-08T00:00:00Z"), []);
+  for (const status of ["disputed", "superseded"]) {
+    fixture.reference_authority.status = status;
+    assert.match(evaluationLabelAdmissionErrors(fixture, "2027-02-08T00:00:00Z").join("\n"), new RegExp(status));
+  }
 });
 
 test("approved solution releases require technical, operational, and risk approvals", async () => {

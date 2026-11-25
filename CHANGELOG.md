@@ -4,6 +4,18 @@ Notable changes to this project are recorded here.
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-11-25
+
+- Bind executed deployment qualification to its frozen policy, disjoint case partitions, observed results and exact promotion scope. Check reference label authority at the release decision.
+- Correct the invoice value gate, separate attempt telemetry from accepted business cases, and distinguish sandbox review, active shadow and canary evidence.
+- Make the public review exercise and recovery replay easier to start. Document immutable skill installation and route engagement skills by the next consequential decision.
+- Extend the retrieval lab through correction and withdrawal. Add matched-budget evaluation, verified containment and event-gap practices, and dated telemetry, remote skill and regulatory references.
+- Reconcile interrupted invoice commits by signed readback and verify the exact applied proposal. Keep shipment staging and spend tied to the reviewed proposal. Preserve immutable plugin files for committed operations and clean up partial writes before retry.
+- Use strict JSON decoding across validation paths and keep search navigation relative to its serving path.
+- Net file-count change for the consolidation layers is zero. The dated research refresh supports these existing decision routes; the maintainer can merge individual findings into the existing evidence ledger if the note no longer serves a distinct review.
+
+### Changes carried forward from public main
+
 - Update `markdown-it-anchor` to 10.1.0. Rerun the five invoice teaching regressions and refresh their lockfile bindings and the packaged guide. The example release stays in review.
 - Prepare `davidahma/ai-guide` as the public repository. Rework the README and first-use routes, keep CI focused on the validation suite, and make Pages opt-in.
 - Separate review-only acceptance from later ledger corrections, correct cost and latency measures, and add a worked hold decision for a canary with insufficient evidence.

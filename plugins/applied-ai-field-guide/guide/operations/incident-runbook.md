@@ -29,9 +29,15 @@
 | External writes | Tool-gateway deny rule | Synthetic commit is denied |
 | One capability | Tool registry disable | Tool unavailable to agent |
 | One tenant/segment | Policy deny rule | Scoped synthetic request denied |
-| Identity | Identity-provider revoke/downscope | Token exchange denied |
+| Identity | Identity-provider revoke/downscope and service-side deny | New exchanges are denied. Already-issued authority is denied on affected service reads and writes within the declared containment limit. |
 | Egress | Proxy deny rule | Destination blocked and logged |
 | Model/provider | Router disable | Traffic shifts or stops |
+
+## Prove containment at the affected service
+
+Use authorized synthetic work in the target drill environment. Record the revocation time and latest time each affected route still accepted an already-issued grant. Verify the first sustained deny for the affected reads, writes, queued worker resume, and retries. Include a neighboring authorized route as a control. A denial at token issuance, an empty queue, or an unavailable upstream source alone leaves service containment unresolved. Preserve approved minimized evidence of each scoped observation and compare the measured delay to the declared containment limit. `IAM-002`, `OPS-003`.
+
+Separate work already committed from pending and unknown work. Compare completed or ambiguous actions with authoritative service readback before replay, compensation, or restoration. An effect committed before containment stays in the reconciliation record even if the original caller can no longer read it. Use separately authorized reconciliation and preserve uncertainty when the source of truth is unavailable. The [event recovery tests](../examples/invoice-exception/durable-recovery/durable-recovery.test.mjs) exercise a synthetic revoked queue and unaffected scope. [R26-97](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-97)
 
 ## Evidence manifest
 

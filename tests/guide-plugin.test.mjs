@@ -1,13 +1,15 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { mkdtemp, mkdir, readFile, readdir, rename, rm, stat, symlink, writeFile } from "node:fs/promises";
+import fsPromises from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { callTool, toolDefinitions } from "../plugins/applied-ai-field-guide/mcp/tools.mjs";
-import { digest, loadConfig } from "../plugins/applied-ai-field-guide/mcp/workspace.mjs";
+import { digest, loadConfig, writeImmutableFile } from "../plugins/applied-ai-field-guide/mcp/workspace.mjs";
 import { artifactTypes } from "../scripts/artifact-type-names.mjs";
 import { guidancePaths } from "../scripts/guide-search-corpus.mjs";
 
@@ -611,6 +613,112 @@ test("the local workspace preserves authority, immutable history, process safety
   assert.equal(status.counts.decisions, 9);
   assert.equal(status.latest_artifacts.find(({ artifact_id }) => artifact_id === "field-observation").revision, 2);
   assert.equal(status.accepted_artifacts.find(({ artifact_id }) => artifact_id === "field-observation").revision, 1);
+});
+
+test("post-commit cleanup faults preserve immutable files and replay receipts", async (t) => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "guide-plugin-finalize-"));
+  const workspaceRoot = path.join(temporary, "engagements");
+  const configPath = path.join(temporary, "config.json");
+  await mkdir(workspaceRoot);
+  await writeFile(configPath, JSON.stringify({ guide_root: root, workspace_root: workspaceRoot }));
+  const priorConfig = process.env.APPLIED_AI_CONFIG_PATH;
+  process.env.APPLIED_AI_CONFIG_PATH = configPath;
+  t.after(async () => {
+    if (priorConfig === undefined) delete process.env.APPLIED_AI_CONFIG_PATH;
+    else process.env.APPLIED_AI_CONFIG_PATH = priorConfig;
+    await rm(temporary, { recursive: true, force: true });
+  });
+  const engagementId = "cleanup-case";
+  await callTool("engagement_start", {
+    engagement_id: engagementId, title: "Synthetic case", tenant: "synthetic",
+    workflow: "Verify mutation cleanup", classification: "public", retention_summary: "Remove after tests",
+  });
+  const directory = path.join(await fsPromises.realpath(workspaceRoot), engagementId);
+  const lockPath = path.join(directory, "engagement-state.json.lock");
+  const auditPath = path.join(directory, "audit.jsonl");
+  const open = fsPromises.open;
+  const unlink = fsPromises.unlink;
+  for (const fault of ["audit", "lock"]) {
+    if (fault === "audit") {
+      t.mock.method(fsPromises, "open", async (target, ...args) => {
+        const handle = await open(target, ...args);
+        if (target === auditPath) {
+          const close = handle.close.bind(handle);
+          handle.close = async () => {
+            await close();
+            throw new Error("synthetic diagnostic close failure");
+          };
+        }
+        return handle;
+      });
+    } else {
+      t.mock.method(fsPromises, "unlink", async (target) => {
+        if (target === lockPath) throw new Error("synthetic lock cleanup failure");
+        return unlink(target);
+      });
+    }
+    syncBuiltinESMExports();
+    const request = {
+      engagement_id: engagementId,
+      operation_id: `save-after-${fault}-fault`,
+      artifact_id: `${fault}-record`,
+      artifact_type: "field-observation", format: "md", content: "Synthetic evidence for cleanup verification.",
+      source_refs: [], depends_on: [], status: "draft",
+    };
+    let saved;
+    try {
+      saved = await callTool("artifact_save_revision", request);
+    } finally {
+      t.mock.restoreAll();
+      syncBuiltinESMExports();
+    }
+    if (fault === "lock") {
+      assert.equal(saved.lock_cleanup_status, "degraded");
+      await unlink(lockPath);
+    } else {
+      assert.equal(saved.audit_mirror_status, "degraded");
+    }
+    assert.equal(saved.status, "saved");
+    assert.equal(digest(await readFile(path.join(directory, saved.artifact.relative_path))), saved.artifact.file_digest);
+    const replay = await callTool("artifact_save_revision", request);
+    assert.equal(replay.idempotent_replay, true);
+    assert.equal(replay.artifact.file_digest, saved.artifact.file_digest);
+  }
+});
+
+test("an interrupted immutable write can be retried without replacing earlier files", async (t) => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "guide-plugin-immutable-write-"));
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const target = path.join(await fsPromises.realpath(temporary), "revision.md");
+  const directory = path.dirname(target);
+  const open = fsPromises.open;
+  t.mock.method(fsPromises, "open", async (candidate, ...args) => {
+    const handle = await open(candidate, ...args);
+    if (candidate === target) {
+      const originalWrite = handle.writeFile.bind(handle);
+      handle.writeFile = async () => {
+        await originalWrite("Partial synthetic revision");
+        throw new Error("synthetic immutable write failure");
+      };
+    }
+    return handle;
+  });
+  syncBuiltinESMExports();
+  try {
+    await assert.rejects(() => writeImmutableFile(directory, target, "Full synthetic revision", 1024),
+      /synthetic immutable write failure/);
+  } finally {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+  await assert.rejects(() => stat(target), { code: "ENOENT" });
+  const written = await writeImmutableFile(directory, target, "Full synthetic revision", 1024);
+  const admitted = await readFile(target, "utf8");
+  assert.equal(admitted, "Full synthetic revision");
+  assert.equal(written.digest, digest(admitted));
+  await assert.rejects(() => writeImmutableFile(directory, target, "Replacement", 1024),
+    { code: "IMMUTABLE_CONFLICT" });
+  assert.equal(await readFile(target, "utf8"), admitted);
 });
 
 test("machine context policy, classification containment, and ambiguous stage projections fail closed", async (t) => {

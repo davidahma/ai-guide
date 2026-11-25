@@ -44,15 +44,8 @@ function validModelExplanation(candidate) {
     && candidate.evidence_refs.every((reference) => typeof reference === "string" && reference.length > 0);
 }
 
-function proposalDigest(context, assessment, selectedRoute) {
-  const material = JSON.stringify({
-    evidence_revision: context.revision,
-    model_version: assessment.model_version,
-    route: selectedRoute,
-    score: assessment.score,
-    shipment_id: context.shipment_id,
-  });
-  return `sha256:${createHash("sha256").update(material).digest("hex")}`;
+function withinBudget(cost) {
+  return Number.isFinite(cost) && cost >= 0 && cost <= policy.maxCostUsd;
 }
 
 function validateContext(context, input, now) {
@@ -133,7 +126,7 @@ export async function runShipmentRiskTriage(input, deps) {
     return terminal("no_action", "policy_no_review_required", trace, { context, assessment, route: selectedRoute });
   }
 
-  if (!Number.isFinite(deps.cost()) || deps.cost() < 0 || deps.cost() > policy.maxCostUsd) {
+  if (!withinBudget(deps.cost())) {
     return terminal("escalated", "budget_exhausted", trace, { context, assessment, route: selectedRoute });
   }
   if (!hasScope(input.caller, requiredScopes.stage)) {
@@ -151,9 +144,13 @@ export async function runShipmentRiskTriage(input, deps) {
     explanation = deterministicExplanation(context, assessment, selectedRoute);
   }
 
+  if (!withinBudget(deps.cost())) {
+    return terminal("escalated", "budget_exhausted", trace, { context, assessment, route: selectedRoute });
+  }
+
   try {
     trace.push({ state: "staging_review_case" });
-    const receipt = await deps.createReviewCase({
+    const proposal = {
       tenant_id: input.tenant_id,
       business_operation_id: input.business_operation_id,
       shipment_id: context.shipment_id,
@@ -163,12 +160,17 @@ export async function runShipmentRiskTriage(input, deps) {
       risk_score: assessment.score,
       model_version: assessment.model_version,
       evidence_revision: assessment.evidence_revision,
-      proposal_digest: proposalDigest(context, assessment, selectedRoute),
       explanation,
+    };
+    const proposalDigest = `sha256:${createHash("sha256").update(JSON.stringify(proposal)).digest("hex")}`;
+    const receipt = await deps.createReviewCase({
+      ...proposal,
+      proposal_digest: proposalDigest,
       caller: input.caller,
     });
-    if (!receipt || receipt.status !== "staged" || typeof receipt.proposal_id !== "string" || typeof receipt.proposal_digest !== "string") {
-      throw codeError("REVIEW_CASE_INVALID", "review-case service did not return a staged case receipt");
+    if (!receipt || receipt.status !== "staged" || typeof receipt.proposal_id !== "string"
+      || !receipt.proposal_id.trim() || receipt.proposal_digest !== proposalDigest) {
+      throw codeError("REVIEW_CASE_INVALID", "review-case service did not confirm the exact staged proposal");
     }
     const reviewCase = { review_case_id: receipt.proposal_id, proposal_digest: receipt.proposal_digest, status: receipt.status };
     return terminal("review_ready", "coordinator_review_required", trace, {

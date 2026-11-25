@@ -11,7 +11,7 @@ Controls: `OPS-001`, `SEC-004`.
 ```mermaid
 flowchart TD
     R["agent.run"] --> C["agent.context.build"]
-    R --> M["gen_ai.inference"]
+    R --> M["agent.model.inference"]
     R --> T["agent.tool.call"]
     T --> P["agent.policy.decision"]
     T --> E["agent.external.effect"]
@@ -170,11 +170,11 @@ Controls: `IAM-001`, `IAM-002`, `REL-001`, `REL-003`, `OPS-001`.
 
 ## Consequential human decisions
 
-For a human approval, rejection, correction, or override that can change a consequential workflow decision, the deployment SHOULD keep a purpose-bound decision record: proposal and evidence references, source and policy revisions, authorized actor, disposition, stated reason or reason-unknown, and later independently verified outcome when available. Link it to the run and effect receipt without putting raw business identifiers or sensitive free text in the shared trace event. Classify, minimize, restrict, and retain the reason under the owning organization's data policy. A reviewer reason is evidence to investigate, not policy or a ground-truth label. Missing reasons and pending outcomes stay explicit. A candidate rule change still needs owner review, independent evaluation, approval, and the ordinary release path. `OPS-001`, `HUMAN-003`, `EVA-006`, `OPS-007`. [R26-91](../research/2026-09-23--decision-models-and-decision-learning.md#r26-91)
+For a human approval, rejection, correction, or override that can change a consequential workflow decision, the deployment SHOULD keep a purpose-bound decision record: proposal and evidence references, source and policy revisions, authorized actor, disposition, stated reason or reason-unknown, and later independently verified outcome when available. Link it to the run and effect receipt without putting raw business identifiers or sensitive free text in the shared trace event. Classify, minimize, restrict, and retain the reason under the owning organization's data policy. A reviewer reason is evidence to investigate, not policy or a ground-truth label. Missing reasons and pending outcomes stay explicit. A candidate rule change still needs owner review, independent evaluation, approval, and the ordinary release path. `OPS-001`, `HUM-003`, `EVA-006`, `OPS-007`. [R26-91](../research/2026-09-23--decision-models-and-decision-learning.md#r26-91)
 
 ## Stop reasons
 
-The shared vocabulary is `completed`, `completed_after_timeout_recovery`, `tenant_mismatch`, `stale_source_revision`, `stale_policy`, `context_load_failed`, `validation_failed`, `policy_denied`, `policy_denied_at_commit`, `idempotency_conflict`, `approval_rejected`, `approval_expired`, `approval_time_invalid`, `approval_identity_invalid`, `approval_digest_mismatch`, `policy_denied_before_commit`, `release_not_admitted`, `service_receipt_invalid`, `readback_denied`, `readback_mismatch`, `budget_exhausted`, `timeout_exhausted`, `cancelled`, `circuit_breaker`, and `internal_error`.
+The shared vocabulary is `completed`, `completed_after_timeout_recovery`, `completed_after_reconciliation`, `tenant_mismatch`, `stale_source_revision`, `stale_policy`, `context_load_failed`, `validation_failed`, `policy_denied`, `policy_denied_at_commit`, `idempotency_conflict`, `approval_rejected`, `approval_expired`, `approval_time_invalid`, `approval_identity_invalid`, `approval_digest_mismatch`, `policy_denied_before_commit`, `release_not_admitted`, `service_receipt_invalid`, `readback_denied`, `readback_mismatch`, `budget_exhausted`, `timeout_exhausted`, `cancelled`, `circuit_breaker`, and `internal_error`.
 
 `trace-event.schema.json` constrains a stop reason to an opaque identifier rather than a universal enum because domain workflows need narrower extensions. Each agent-system design MUST publish and test its allowed vocabulary. The invoice reference uses `stale_invoice_revision` as its domain-specific form of `stale_source_revision`.
 
@@ -183,13 +183,144 @@ Control: `OPS-001`.
 ## Core SLIs
 
 ```text
-accepted_outcome_rate = verifier_confirmed_accepted_outcomes / eligible_runs
+accepted_outcome_rate = verifier_confirmed_accepted_cases_as_of_cutoff / eligible_cases
 unauthorized_effect_rate = unauthorized_effects / external_effects
 duplicate_effect_rate = duplicate_effects / external_effects
 postcondition_failure_rate = mismatched_readbacks / external_effects
-intervention_rate = human_interventions / eligible_runs
-cost_per_accepted_outcome = total_system_cost / accepted_outcomes
+attempt_intervention_rate = attempts_with_human_intervention / observed_attempts
+cost_per_accepted_outcome = full_attributed_cohort_cost / verifier_confirmed_accepted_cases_as_of_cutoff
 trace_completeness = traces_with_required_fields / traces_sampled
+```
+
+### Reconcile cases, attempts, and observations
+
+Freeze the eligible cohort at source-case arrival. Join the charter's stable, scoped case identity to the independent verifier's disposition, and count each case at most once at the declared cutoff. An operation identifier deduplicates a particular effect. A run identifier deduplicates metered attempts. Neither establishes the eligible-case denominator. Even when two runs each emit `agent.accepted_outcome: true` after checking the same receipt, the business outcome still counts once.
+
+Attribute both attempt costs, including failed or abandoned attempts, and applicable review, support, and recovery costs to the cohort. Report attempt completion separately across settled attempts and show pending attempts and their observed costs. Keep an unverified case pending at the applicable evidence cutoff. Link late and correcting verifier records to the original cohort, preserve the event and observation times, and issue a new as-of report without revising the previously issued result. A correction can withdraw acceptance. See the [whole-case cost and timing rules](slo-scorecard.md#measure-the-whole-case) and [invoice reporting projection](../examples/invoice-exception/case-outcomes.mjs). The linked projection operates on already reconciled synthetic inputs and includes attempt cost only. `OPS-001`, `EVA-006`, `CST-001`.
+
+### Optional OpenTelemetry mapping
+
+The topology names above are local. A telemetry exporter can translate an agent invocation, inference request, and tool invocation into pinned OpenTelemetry GenAI spans while preserving trace and parent span IDs. Use the [standalone GenAI conventions v0.1.0](https://github.com/open-telemetry/semantic-conventions-genai/releases/tag/v0.1.0) with scope schema URL `https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev`. The agent span guidance is at Development status. Validate on each mapping upgrade. The [sanitized synthetic OTLP trace](#synthetic-otlp-trace) illustrates the export and does not replace policy decisions, effect receipts, or independent verification evidence. [R26-99](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-99)
+
+Apply the export allowlist before emitting success, retry, fallback, and error signals. Raw input, output, instructions, tool arguments, tool results, and hidden reasoning stay out of this mapping. Do not export business case identifiers as metric attributes. Correlate independently authorized evidence through internal run and trace IDs without putting protected evidence in the exported trace. `OPS-001`, `SEC-004`.
+
+#### Synthetic OTLP trace
+
+This trace represents a hypothetical model-directed invoice review. It illustrates the mapping independently of the deterministic invoice runtime.
+
+```json
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "invoice-review-fixture"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "invoice-review.trace-example"
+          },
+          "schemaUrl": "https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev",
+          "spans": [
+            {
+              "traceId": "cdd0413049124f61819979bba11acfcc",
+              "spanId": "17f6ab54466bb009",
+              "name": "invoke_agent invoice_review",
+              "kind": 1,
+              "startTimeUnixNano": "1786122000000000000",
+              "endTimeUnixNano": "1786122000040000000",
+              "attributes": [
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "invoke_agent"
+                  }
+                },
+                {
+                  "key": "gen_ai.agent.name",
+                  "value": {
+                    "stringValue": "invoice_review"
+                  }
+                }
+              ]
+            },
+            {
+              "traceId": "cdd0413049124f61819979bba11acfcc",
+              "spanId": "718e9270ea3a7961",
+              "name": "chat example-small",
+              "kind": 3,
+              "startTimeUnixNano": "1786122000005000000",
+              "endTimeUnixNano": "1786122000020000000",
+              "parentSpanId": "17f6ab54466bb009",
+              "attributes": [
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "example"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "example-small"
+                  }
+                }
+              ]
+            },
+            {
+              "traceId": "cdd0413049124f61819979bba11acfcc",
+              "spanId": "2859f510285728a1",
+              "name": "execute_tool read_invoice",
+              "kind": 1,
+              "startTimeUnixNano": "1786122000022000000",
+              "endTimeUnixNano": "1786122000025000000",
+              "parentSpanId": "17f6ab54466bb009",
+              "attributes": [
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "execute_tool"
+                  }
+                },
+                {
+                  "key": "gen_ai.agent.name",
+                  "value": {
+                    "stringValue": "invoice_review"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.name",
+                  "value": {
+                    "stringValue": "read_invoice"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.type",
+                  "value": {
+                    "stringValue": "function"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ## Telemetry controls

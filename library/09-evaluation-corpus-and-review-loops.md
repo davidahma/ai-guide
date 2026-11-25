@@ -90,6 +90,12 @@ Report the operating point the evidence actually supports: autonomous coverage, 
 
 Saved terminal trajectories can support policy replay only when the routing decision cannot change what happens next. If an intervention can clarify, correct, retry, redirect, or take over during execution, evaluate the policy in the loop through a representative rerun or faithful simulation. Requalify according to what changed: a terminal scoring threshold may permit a new judgment over preserved evidence, while a changed behavior, context, tool, environment, reviewer path, policy interaction, or eligible population usually requires fresh execution. [R26-85](../research/2026-09-03--workflow-proof-and-deployment-qualification.md#r26-85) `EVA-006`, `HUM-003`.
 
+## Set the evaluation schedule
+
+Use a short, versioned development subset for fast feedback. Stratify by decision, risk and difficulty, then periodically compare subset verdicts with a broader replay over the same revisions. Record which regressions the subset missed and the rerun cost. Change the subset if it routinely misses a consequential failure. [R26-95](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-95)
+
+For release, run the critical cases for the affected route and exercise the protected qualification partition for the frozen policy. Access to development cases stays separate from access to qualification cases and labels. A change to tools, permissions, source currency or the reviewer path determines which evidence needs requalification. Keep the original comparison available when changing sampling. See the [matched-budget example](04-production-evaluation-and-governance.md#compare-a-longer-workflow-under-a-matched-budget) for recording interventions, abandoned runs and late outcomes.
+
 ## Lint the evaluation corpus itself
 
 Just as a codebase needs tests, the corpus needs automated quality checks. Fail CI when a case is malformed or a change alters protected coverage without an explicit decision.

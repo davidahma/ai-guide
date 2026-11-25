@@ -63,9 +63,9 @@ The next field move is not “add more autonomy.” It is to observe ten eligibl
 
 ## Optional positive practice path
 
-The [practice packet's R4 branch](../document-review/practice.md#round-5-a-narrow-path-earns-a-limited-pilot) shows how a decision can change when new evidence closes a bounded set of gaps. In that alternate synthetic branch, a predeclared shadow trial, reviewer source checks, capacity result, backup recovery exercise, and metric-owner verification support a limited review-only pilot for fixed-format invoices.
+The [practice packet's R4 branch](../document-review/practice.md#round-5-evidence-for-a-limited-pilot-proposal) uses an offline rehearsal to support a conditional proposal for a review-only target trial. The fixed-format fixture exercises reviewer source checks, capacity, backup recovery, and metric-owner verification.
 
-That decision still retains reviewer approval, manual fallback, exact release binding, and stop conditions. It does not authorize automatic posting or establish target authentication, durable state, audit, long-run behavior, support cost, customer acceptance, or realized savings. The current worked engagement remains review-only and blocked from deployment; the alternate path exists to practice earning a narrow “yes” without turning it into a broader claim.
+Target admission still needs independently checked permissions, operational readiness, and release evidence. Reviewer approval, manual fallback, exact release binding, and stop conditions apply throughout. The current worked engagement remains a review-only shadow candidate with no target traffic.
 
 ## Optional workflow redesign exercise
 

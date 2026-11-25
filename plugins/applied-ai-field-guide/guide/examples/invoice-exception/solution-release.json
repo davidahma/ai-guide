@@ -4,7 +4,7 @@
   "release_id": "invoice_exception_reference_release",
   "version": "3.1.0",
   "release_status": "review",
-  "release_digest": "sha256:d7ef4b837a84df4a3ecff8f0add2c7341a73155aebcc5596fade0d9ee47bf07f",
+  "release_digest": "sha256:157d790795a22430ccbb440a2a743c38d784b87411304f3d1ae00a16c8027b59",
   "owner": "reference-release-maintainer",
   "created_at": "2026-08-07T18:00:00Z",
   "workflow_charter_uri": "workflow-charter.json",
@@ -44,7 +44,7 @@
       "uri": "agent-system.json",
       "version": "3.0.0",
       "schema_version": "1.2.0",
-      "digest": "sha256:682b9cb4519a10df1b585f51fac05d95d5ddb1dc9c3ebf5b58948fb6441db012",
+      "digest": "sha256:52884773597731cba6694ac59eb22f1c0f9892995b30423c9bc16299945eb1e2",
       "change_summary": "Bind the exact workflow topology, authority, and behavior contract."
     },
     {
@@ -52,7 +52,7 @@
       "uri": "behavior-bundle.json",
       "version": "3.0.0",
       "schema_version": "1.0.0",
-      "digest": "sha256:ebe51e05f22df7ffe48461f4d6d761a4808cfd985f0a8eae5e32294da0a85d25",
+      "digest": "sha256:8a7ba67e510135a8c9e24fa6a978553f67f322345f6f513a8186b9d3bce13daa",
       "change_summary": "Bind the exact runtime, policy, tool, and capability component graph."
     },
     {
@@ -92,7 +92,7 @@
       "uri": "tools/readback-invoice-effect.json",
       "version": "2.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:b86413b438a24b6f118024177938ef75a8a7a979aa3623188efbb7c00f67caec",
+      "digest": "sha256:45c9840a290ea0650ba1cfdca41bb8a432f115deeb35fa65169c4928e3adf873",
       "change_summary": "Bind the exact source-of-truth effect readback contract."
     },
     {
@@ -100,7 +100,7 @@
       "uri": "capabilities/read-invoice.json",
       "version": "2.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:a9011198868363cae1dc628433cd3857a4dbeeb8b3f5be45d6b5c3cddf1d833d",
+      "digest": "sha256:ca4380ad7df4b6704ac8765a2128f68b2af5eefb1e3d13342db7243bc9b6d0e9",
       "change_summary": "Bind the candidate invoice-read build and authority projection."
     },
     {
@@ -108,7 +108,7 @@
       "uri": "capabilities/retrieve-policy.json",
       "version": "3.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:a932fc6c01a1b63f1e8ca2d9cc1018855953dfac9e2385e8472358615380052e",
+      "digest": "sha256:58aa6eb4a890d5b87ccc5dd934f02f511de379b98549a4bdc1657a7806acdd17",
       "change_summary": "Bind the candidate policy-read build and authority projection."
     },
     {
@@ -116,7 +116,7 @@
       "uri": "capabilities/stage-resolution.json",
       "version": "3.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:baf9cf8048dcaa50d896e3672de7cf7df2b23d3eb8b77d9677cb2a646173e6f7",
+      "digest": "sha256:cf03e279f3357a59b5fe286b15eccd67716357aaddf5e605b46d45d0d2c927f3",
       "change_summary": "Bind the candidate staging build and authority projection."
     },
     {
@@ -124,7 +124,7 @@
       "uri": "capabilities/commit-resolution.json",
       "version": "3.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:4e095d34d630fa8b382c94722b91bc33569f3e38a6348a472da321d2f81c2670",
+      "digest": "sha256:26bc026ab0951e14f7a4db5e4f81fe944c002f6952f2c8b509fa33060add109d",
       "change_summary": "Bind the candidate commit build and authority projection."
     },
     {
@@ -132,7 +132,7 @@
       "uri": "capabilities/readback-invoice-effect.json",
       "version": "2.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:239f8bbd8363c704200be5e01fe9a11cc6a20b83af42211f415a137746675601",
+      "digest": "sha256:16a2c5b7f18a605011b0570635287f245818888cfe5418f5f686f2c26c5498ca",
       "change_summary": "Bind the candidate readback build and authority projection."
     },
     {
@@ -156,7 +156,7 @@
       "uri": "evaluation-report.json",
       "version": "2.0.9",
       "schema_version": "1.1.0",
-      "digest": "sha256:3dd1a3e30854b1941020244a831851ccb3f86da71c9ab84c97811bc9b0a7a590",
+      "digest": "sha256:6204da5764033ffc3baa3ca755271ace26d0a5129c93eca30a35f2225995952e",
       "change_summary": "Bind the isolated deterministic regression claim and raw runner evidence."
     },
     {
@@ -164,7 +164,7 @@
       "uri": "reference-loop.mjs",
       "version": "3.0.0",
       "schema_version": null,
-      "digest": "sha256:1e528dd3191ff7b0abc3c44b01235a100cfc47ceac414aed3223390a94f54b5d",
+      "digest": "sha256:5aab59836653590a7aa0a22fde36037893a76085df0e864d1f2ff5037da1f3c6",
       "change_summary": "Bind the exact bounded state-machine runtime under review."
     },
     {
@@ -172,7 +172,7 @@
       "uri": "README.md",
       "version": null,
       "schema_version": null,
-      "digest": "sha256:6b706b3cde259f7ad26d74895205b5e05a3250a108e887d531efae7e22d55c12",
+      "digest": "sha256:4b8aaa8fddb96a63a74e6620e728621f6f99de0b745639ddf669b0c5328e623a",
       "change_summary": "Bind the documented operator-facing reference workflow."
     },
     {
@@ -180,7 +180,7 @@
       "uri": "../../operations/incident-runbook.md",
       "version": null,
       "schema_version": null,
-      "digest": "sha256:497d8c159c86a1db766b86d69c05cab8fe57e7a3bb22a257da8aef97eec97a86",
+      "digest": "sha256:0b3fefd4bd78542756ea755efe6dbb126d4affc325f9b8a97270b24fbb5e7c5d",
       "change_summary": "Bind the incident, containment, recovery, and evidence procedure."
     }
   ],

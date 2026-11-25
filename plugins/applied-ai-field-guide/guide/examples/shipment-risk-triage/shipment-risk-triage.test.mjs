@@ -105,12 +105,55 @@ test("cost ceiling stops before explanation or a staged review case", async () =
   assert.equal(state.reviewCases.length, 0);
 });
 
+test("explanation spend is checked before staging a review case", async () => {
+  const { state, deps } = createShipmentRiskWorld();
+  const render = deps.renderReviewExplanation;
+  deps.renderReviewExplanation = async (request) => {
+    const explanation = await render(request);
+    state.costUsd = 0.21;
+    return explanation;
+  };
+  const result = await runShipmentRiskTriage(input(), deps);
+  assert.equal(result.state, "escalated");
+  assert.equal(result.stop_reason, "budget_exhausted");
+  assert.equal(state.calls.some((call) => call.operation === "render_review_explanation"), true);
+  assert.equal(state.calls.some((call) => call.operation === "create_review_case"), false);
+  assert.equal(state.reviewCases.length, 0);
+});
+
 test("same business operation reuses the staged review case", async () => {
   const { state, deps } = createShipmentRiskWorld();
   const first = await runShipmentRiskTriage(input(), deps);
   const second = await runShipmentRiskTriage(input(), deps);
   assert.equal(first.review_case.review_case_id, second.review_case.review_case_id);
+  assert.equal(first.review_case.proposal_digest, second.review_case.proposal_digest);
   assert.equal(state.reviewCases.length, 1);
+});
+
+test("the same business operation with changed evidence cannot reuse a prior staged case", async () => {
+  const { state, deps } = createShipmentRiskWorld();
+  const first = await runShipmentRiskTriage(input(), deps);
+  state.assessment.score = 0.84;
+  const second = await runShipmentRiskTriage(input(), deps);
+  assert.equal(first.state, "review_ready");
+  assert.equal(second.state, "escalated");
+  assert.equal(second.stop_reason, "IDEMPOTENCY_CONFLICT");
+  assert.equal(state.reviewCases.length, 1);
+  assert.equal(state.reviewCases[0].risk_score, 0.91);
+});
+
+test("a mismatched staged receipt does not prove the case is ready", async () => {
+  const { state, deps } = createShipmentRiskWorld();
+  const create = deps.createReviewCase;
+  deps.createReviewCase = async (request) => ({
+    ...await create(request),
+    proposal_digest: `sha256:${"0".repeat(64)}`,
+  });
+  const result = await runShipmentRiskTriage(input(), deps);
+  assert.equal(result.state, "escalated");
+  assert.equal(result.stop_reason, "REVIEW_CASE_INVALID");
+  assert.equal(state.reviewCases.length, 1);
+  assert.equal("review_case" in result, false);
 });
 
 test("declared evaluation cases execute their representative routing worlds", async () => {

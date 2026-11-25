@@ -81,6 +81,21 @@ Production evaluation should also track cohort and time effects, policy changes,
 
 For outcomes that arrive later, declare the observation window, authoritative event source, producing offer or behavior version, and evidence cutoff before the trial. Keep pending cases separate from failed cases. Record event time and observation time; append late outcomes to their original cohort and preserve earlier as-of reports. An expired window means no outcome was observed within that window, not that one can never arrive. Safety, spend, or contact limits can still stop a trial early. The [service-referral case](../examples/service-referral/README.md) works through a payment received after a premature failure judgment. `EVA-006`, `OPS-001`.
 
+#### Compare a longer workflow under a matched budget
+
+Compare complete operating policies on paired cases from the same task classes and source revisions. Predeclare total and per-case ceilings for machine time, tool calls, spend and reviewer time. Charge retries and parallel branches against the same ceilings. Record independently accepted outcomes, interventions, abandonments and still-pending cases at the cutoff. Compare actual consumption as well as adherence to the ceilings. A change in the kinds of cases routed to the candidate can move the aggregate rate on its own. [R26-94](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-94)
+
+For example, compare the current invoice review route with a longer-running candidate on the same twelve cases per class. The illustrative protocol allows up to 24 tool calls, 120 machine minutes, $12 in metered spend, and 48 reviewer minutes per class per route. Per case, cap the run at two tool calls, ten machine minutes, $1, and four reviewer minutes. A reviewer can intervene once per case. Each admitted case has one disposition at cutoff. Intervention counts can overlap any disposition.
+
+| Task class and route | Accepted | Rejected | Abandoned | Pending | Cases with intervention | Reviewer minutes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Fixed-format, current | 10 | 1 | 1 | 0 | 2 | 10 |
+| Fixed-format, candidate | 10 | 2 | 0 | 0 | 2 | 8 |
+| Narrative, current | 5 | 5 | 1 | 1 | 5 | 18 |
+| Narrative, candidate | 7 | 3 | 1 | 1 | 8 | 28 |
+
+In the narrative pairs, four cases are accepted on both routes, three on the candidate alone, one on the current route alone, and four on neither. That is a net gain of two accepted cases for ten more reviewer minutes. Inspect the three gains and the loss against independent source judgments, then compare actual tool and model spend. Keep the pending case in the eligible population. If a later protected qualification run lacks enough cases to establish the predeclared reliability bound, hold promotion even with this development gain.
+
 Every production failure should be triaged into:
 
 1. A replayable example

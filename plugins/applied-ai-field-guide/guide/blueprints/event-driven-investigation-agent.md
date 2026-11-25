@@ -48,7 +48,8 @@ retry_exhausted -> dead_lettered
 
 | Concern | Requirement |
 | --- | --- |
-| Delivery | At-least-once accepted; effects idempotent |
+| Delivery | Accept at-least-once delivery, deduplicate stable source event IDs, and reconcile missing source history |
+| Cursor | Persist the source cursor atomically with intake or only after intake is durable. Bind it to the source, tenant, subscription, and authority scope. |
 | Lease | Owner, expiry, heartbeat, fencing token |
 | Checkpoint | State version, evidence hashes, budgets, next action |
 | Replay | Reducer is deterministic; side effects identified by receipt |
@@ -71,6 +72,8 @@ retry_exhausted -> dead_lettered
 | Failure | Response |
 | --- | --- |
 | Duplicate event | Return existing workflow ID and receipt |
+| Missing or truncated source history | Hold the affected subscription and record an explicit unknown state. Reconcile from the authoritative journal or a consistently bound snapshot. Verify coverage before advancing the cursor. |
+| Subscription revoked after intake | Recheck current authority at dispatch and at each protected read or effect. Keep completed effects in reconciliation. |
 | Worker crash | Lease expiry; resume from checkpoint |
 | Tool timeout | Retry by class and budget |
 | Provider outage | Pause workflow; degrade or reroute by policy |
@@ -88,7 +91,12 @@ retry_exhausted -> dead_lettered
 6. Expired lease and stale fencing token.
 7. Human pause and resume after authorization change.
 8. Dead-letter replay after defect correction.
+9. Disconnect before a batch is committed, then redeliver it. Verify one durable intake per source event and cursor progress only after intake.
+10. Repeated or unavailable cursor and source truncation with a missing event. Hold until the service confirms reconciled coverage, or keep the gap unresolved.
+11. Queued work after a subscription is revoked. Verify denial on the affected route, confirm the unaffected route still works, and reconcile any effects committed before revocation.
+
+The [invoice recovery drill](../examples/invoice-exception/durable-recovery/README.md#reconcile-an-event-gap) exercises these inputs offline. For an optional transport example, the [MCP Events beta](https://modelcontextprotocol.io/extensions/events/overview#cursors-and-delivery-guarantees) distinguishes resume cursors from truncated history signals. The upstream notification still needs application-owned durable intake and current authority. [R26-98](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-98)
 
 ## Controls
 
-`REL-001`, `REL-002`, `REL-003`, `REL-004`, `STA-001`, `STA-003`, `OPS-001`, `OPS-003`, `OPS-005`, `CST-002`
+`REL-001`, `REL-002`, `REL-003`, `REL-004`, `STA-001`, `STA-003`, `IAM-002`, `OPS-001`, `OPS-003`, `OPS-005`, `CST-002`

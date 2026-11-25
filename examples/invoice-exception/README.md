@@ -16,8 +16,10 @@ invoice exception event
   -> reauthorize and commit idempotently
   -> reconcile any effect-unknown timeout
   -> read back ledger state
-  -> completed receipt | compensation + incident
+  -> completed receipt | separately authorized compensation + incident | unresolved incident
 ```
+
+The ledger readback records the digest of the proposal it applied and the count of applied resolutions. The verifier compares those observations with the approved proposal and confirms that the signed commit falls within that approval's validity window. A verified mismatch may enter the compensation path. Unknown or unauthenticated evidence opens an incident for reconciliation before any further write.
 
 ## Architecture
 
@@ -92,7 +94,7 @@ npm test
 - `current_caller_scopes` and `current_policy_revision` are checked at each data/effect boundary
 - the [data-context manifest](data-context-manifest.json) separates operational, policy, evaluation, and telemetry uses and binds the agent's exact source projection, preparation, quality, output, and drift contract
 - `committed == true` only after source-of-truth readback
-- `effect_unknown` is reconciled before retry or completion
+- A timeout or transport failure after commit dispatch enters `effect_unknown`. Independent readback is required before completion. An expired deadline before dispatch ends without a reconciliation attempt.
 - `completed == true` only after trusted receipt and readback-attestation verification
 - `steps`, `wall_time`, and `cost` stay within the declared runtime budget
 - `model_access(credentials) == false`

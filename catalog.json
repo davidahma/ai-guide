@@ -1,8 +1,14 @@
 {
   "$schema": "./schemas/artifact-catalog.schema.json",
   "schema_version": "1.1.0",
-  "updated": "2026-10-01",
+  "updated": "2026-11-25",
   "artifacts": [
+    {
+      "id": "evidence.agent-evaluation-and-operating-evidence",
+      "type": "evidence",
+      "path": "research/2026-11-25--agent-evaluation-and-operating-evidence.md",
+      "tags": ["evaluation", "retrieval", "operations", "telemetry", "interoperability"]
+    },
     {
       "id": "evidence.workflow-step-redesign",
       "type": "evidence",
@@ -410,6 +416,12 @@
       "type": "schema",
       "path": "schemas/evaluation-output.schema.json",
       "tags": ["evaluation", "runner", "evidence", "integrity"]
+    },
+    {
+      "id": "schema.qualification-observations",
+      "type": "schema",
+      "path": "schemas/qualification-observations.schema.json",
+      "tags": ["evaluation", "qualification", "evidence", "integrity"]
     },
     {
       "id": "schema.evaluation-report",
