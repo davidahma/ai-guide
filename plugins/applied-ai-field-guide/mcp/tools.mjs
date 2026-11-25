@@ -783,6 +783,7 @@ async function verifyValidatorRuntime(config, canonicalType) {
     "scripts/governance-invariants.mjs",
     "scripts/contract-invariants.mjs",
     "scripts/repository-paths.mjs",
+    "scripts/strict-json.mjs",
     `schemas/${canonicalType}.schema.json`,
   ];
   const bindings = [];

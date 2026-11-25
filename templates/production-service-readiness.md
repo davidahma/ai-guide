@@ -16,6 +16,16 @@ Do not calculate a readiness score. One unresolved high-consequence boundary can
 | Technical, operational, risk, and receiving-service reviewers | — |
 | Evidence cutoff and review due | — |
 
+## External obligations
+
+For the scoped release, record the use, actor role, and jurisdictions with the responsible legal, policy, or compliance owner. Date the applicability decision and record an authoritative source and revision. Repeat the row for each obligation relevant to the release decision.
+
+| Jurisdiction, use, and actor role | Obligation and authoritative source | Applicability, effective date, and rationale | Accountable owner and decision date | Release evidence and revision | Review trigger |
+| --- | --- | --- | --- | --- | --- |
+| — | — | Applies / does not apply / unresolved | — | — | — |
+
+If required applicability remains unresolved or its evidence is missing, carry it as an open readiness dependency. Revisit the decision after a material change in use, actor role, region, or applicable authority. The EU Digital Omnibus is a dated example of why deadlines and duties must be verified for the exact role and system category. [R26-99](../research/2026-11-25--agent-evaluation-and-operating-evidence.md#r26-99)
+
 ## Status contract
 
 Use only the following statuses. Status describes the maturity of evidence for the declared slice; it does not authorize release.

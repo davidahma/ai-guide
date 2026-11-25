@@ -458,6 +458,7 @@
               }
             },
             "execution_mode": { "enum": ["terminal_replay", "policy_in_loop_rerun", "not_executed"] },
+            "execution_evidence": { "$ref": "#/$defs/qualificationEvidence" },
             "operating_point": {
               "type": "object",
               "additionalProperties": false,
@@ -495,7 +496,10 @@
             {
               "if": { "properties": { "status": { "const": "qualified" } }, "required": ["status"] },
               "then": {
+                "required": ["execution_evidence"],
                 "properties": {
+                  "execution_evidence": { "$ref": "#/$defs/qualificationEvidence" },
+                  "execution_mode": { "enum": ["terminal_replay", "policy_in_loop_rerun"] },
                   "oversight_policy": { "type": "object", "properties": { "frozen_before_qualification": { "const": true } } },
                   "evidence_partitions": { "type": "object", "properties": { "disjoint": { "const": true } } },
                   "operating_point": {
@@ -526,6 +530,18 @@
           ]
         }
       ]
+    },
+    "qualificationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segment", "effect_class", "policy_uri", "observations_uri", "observations_digest"],
+      "properties": {
+        "segment": { "type": "string", "minLength": 2 },
+        "effect_class": { "enum": ["none", "staged", "reversible", "irreversible"] },
+        "policy_uri": { "$ref": "#/$defs/localReference" },
+        "observations_uri": { "$ref": "#/$defs/localReference" },
+        "observations_digest": { "$ref": "#/$defs/digest" }
+      }
     },
     "immutableDataset": {
       "type": "object",

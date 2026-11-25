@@ -32,6 +32,7 @@
       "revision": { "type": "string" },
       "status": { "type": "string" },
       "resolution_count": { "type": "integer", "minimum": 0 },
+      "applied_proposal_digest": { "type": ["string", "null"], "pattern": "^sha256:[a-f0-9]{64}$" },
       "last_effect": {
         "type": "object",
         "additionalProperties": false,
@@ -165,6 +166,6 @@
     { "code": "UNAVAILABLE", "class": "retryable", "retry": true, "retry_safety": "idempotent_replay", "escalate": false }
   ],
   "observability": { "span_name": "agent.tool.readback_invoice_effect", "audit_event": "invoice_resolution.readback", "redacted_fields": ["service_receipt.subject"], "postcondition_readback": false },
-  "invariants": ["request authority and tuple match the admitted commit", "returned effect matches operation_id", "response contains only minimal reconciliation data"],
+  "invariants": ["request authority and tuple match the admitted commit", "returned effect matches operation_id", "the postcondition verifier requires readback evidence of the exact applied proposal", "response contains only minimal reconciliation data"],
   "control_ids": ["CTX-001", "TOL-001", "TOL-005", "IAM-002", "IAM-003", "REL-003", "SEC-005", "SEC-006", "OPS-002"]
 }

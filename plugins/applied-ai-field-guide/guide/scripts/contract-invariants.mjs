@@ -436,8 +436,21 @@ export function evaluationReportSemanticErrors(report, label = "evaluation repor
       errors.push(`${label} measured or assumed reviewer effectiveness requires a value`);
     }
     if (qualification.status === "qualified") {
+      if (!["terminal_replay", "policy_in_loop_rerun"].includes(qualification.execution_mode)
+        || !qualification.execution_evidence) {
+        errors.push(`${label} qualified deployment policy requires executed evidence`);
+      }
       if (policy.frozen_before_qualification !== true || partitions.disjoint !== true) {
         errors.push(`${label} qualified deployment policy must be frozen and tested on a disjoint qualification partition`);
+      }
+      if (partitions.development?.digest === partitions.qualification?.digest) {
+        errors.push(`${label} development and qualification partition digests must differ`);
+      }
+      if (point.reliability_lower_bound > point.observed_reliability) {
+        errors.push(`${label} deployment reliability lower confidence bound exceeds the observed reliability`);
+      }
+      if (!populationSegments.has(qualification.execution_evidence?.segment)) {
+        errors.push(`${label} qualified deployment segment is outside the evaluation population`);
       }
       if (point.observed_reliability < point.target_reliability
         || point.reliability_lower_bound < point.target_reliability) {
@@ -505,6 +518,126 @@ export function evaluationReportSemanticErrors(report, label = "evaluation repor
     }
   }
   return errors;
+}
+
+export function qualificationExecutionErrors(report, execution, label = "qualification execution") {
+  const qualification = report.deployment_qualification;
+  const scope = qualification.execution_evidence;
+  const errors = [];
+  if (!execution || typeof execution !== "object") return [`${label} has no observations`];
+  const bindings = {
+    segment: scope.segment,
+    effect_class: scope.effect_class,
+    execution_mode: qualification.execution_mode,
+    policy_digest: qualification.oversight_policy.digest,
+    environment_digest: report.system.environment.environment_digest,
+    grader_digest: report.evaluator.grader.digest,
+  };
+  if (Object.entries(bindings).some(([key, expected]) => execution[key] !== expected)) {
+    errors.push(`${label} does not match the declared scope, policy or environment`);
+  }
+  const timeline = [execution.frozen_at, execution.started_at, execution.completed_at, report.generated_at].map(Date.parse);
+  if (!timeline.every(Number.isFinite) || timeline[0] >= timeline[1]
+    || timeline[1] > timeline[2] || timeline[2] > timeline[3]) {
+    errors.push(`${label} must start after policy freeze and finish before report generation`);
+  }
+  const memberId = /^[a-z][a-z0-9_-]*$/;
+  const partitions = ["development", "qualification"].map((name) => {
+    const members = execution[name];
+    if (!Array.isArray(members) || !members.length || members.some((member) => (
+      !member || Object.keys(member).length !== 2 || typeof member.case_id !== "string"
+      || typeof member.group_id !== "string" || !memberId.test(member.case_id) || !memberId.test(member.group_id)
+    ))) {
+      errors.push(`${label} has invalid ${name} partition membership`);
+      return new Map();
+    }
+    const indexed = new Map(members.map(({ case_id, group_id }) => [case_id, group_id]));
+    const ordered = [...indexed.keys()].sort().map((case_id) => ({ case_id, group_id: indexed.get(case_id) }));
+    if (indexed.size !== members.length || sha256Digest(ordered) !== qualification.evidence_partitions[name].digest) {
+      errors.push(`${label} has a duplicate or inconsistent ${name} partition`);
+    }
+    return indexed;
+  });
+  const [development, holdout] = partitions;
+  const developmentGroups = new Set(development.values());
+  if ([...holdout].some(([caseId, groupId]) => development.has(caseId) || developmentGroups.has(groupId))) {
+    errors.push(`${label} development and qualification cases or leakage groups overlap`);
+  }
+  const results = execution.results;
+  if (!Array.isArray(results) || results.length !== holdout.size || holdout.size === 0
+    || new Set(results.map((result) => result?.case_id)).size !== results.length
+    || results.some((result) => !result || Object.keys(result).length !== 3 || !holdout.has(result.case_id)
+      || typeof result.accepted !== "boolean" || typeof result.reviewed !== "boolean")) {
+    errors.push(`${label} must record exactly one outcome and review decision per held-out case`);
+    return errors;
+  }
+  const point = qualification.operating_point;
+  const reliability = results.filter((result) => result.accepted).length / results.length;
+  const reviewBurden = results.filter((result) => result.reviewed).length / results.length;
+  if (Math.abs(reliability - point.observed_reliability) > 1e-9
+    || Math.abs(reviewBurden - point.human_review_burden) > 1e-9) {
+    errors.push(`${label} observed reliability or review burden differs from the held-out results`);
+  }
+  const quantiles = new Map([[0.9, 1.2815515655446004], [0.95, 1.6448536269514722], [0.99, 2.3263478740408408]]);
+  const z = quantiles.get(point.confidence);
+  if (point.confidence_method !== "one_sided_wilson" || z === undefined
+    || new Set(holdout.values()).size !== holdout.size) {
+    errors.push(`${label} uses an unsupported confidence method or repeated qualification groups`);
+  } else {
+    const n = results.length;
+    const zSquared = z * z;
+    const lower = (reliability + zSquared / (2 * n)
+      - z * Math.sqrt(reliability * (1 - reliability) / n + zSquared / (4 * n * n)))
+      / (1 + zSquared / n);
+    if (Math.abs(Math.max(0, lower) - point.reliability_lower_bound) > 1e-6) {
+      errors.push(`${label} reliability lower confidence bound differs from the executed cases`);
+    }
+    if (lower < point.target_reliability) {
+      errors.push(`${label} recomputed reliability lower confidence bound is below target`);
+    }
+  }
+  return errors;
+}
+
+export function promotionQualificationErrors(release, evaluation, admittedEffectClasses = []) {
+  const expansion = release.authority_expansion;
+  const highestEffect = ["irreversible", "reversible", "staged"]
+    .find((effect) => admittedEffectClasses.includes(effect)) ?? "none";
+  const requiresProof = (release.rollout?.traffic_percent ?? 0) > 0 && highestEffect !== "none"
+    && ["approved", "deployed", "rolled_back", "retired"].includes(release.release_status);
+  if (requiresProof && release.rollout.strategy === "canary" && highestEffect === "irreversible") {
+    return ["a canary must limit admitted effects to staged or reversible writes"];
+  }
+  if (!expansion) {
+    return requiresProof ? ["live effect-capable release requires explicit authority qualification"] : [];
+  }
+  const qualification = evaluation?.deployment_qualification;
+  const evidence = qualification?.execution_evidence;
+  if (release.target_segments.length !== 1 || release.target_segments[0] !== expansion.segment
+    || qualification?.status !== "qualified" || evidence?.segment !== expansion.segment
+    || evidence?.effect_class !== expansion.effect_class
+    || (requiresProof && highestEffect !== expansion.effect_class)
+    || qualification.workflow_success_metric !== expansion.success_metric
+    || qualification.operating_point?.target_reliability !== expansion.minimum_reliability
+    || qualification.oversight_policy?.digest !== expansion.policy_digest) {
+    return ["authority expansion requires qualified evidence for the exact segment, effect class, frozen policy and success threshold"];
+  }
+  return [];
+}
+
+export function evaluationLabelAdmissionErrors(evaluationCase, asOf) {
+  const authority = evaluationCase?.reference_authority;
+  if (!authority) return ["reference label has no authority record"];
+  if (authority.status && authority.status !== "approved") return [`reference label is ${authority.status}`];
+  const cutoff = Date.parse(asOf);
+  const approval = Date.parse(authority.approved_at);
+  if (!Number.isFinite(cutoff) || !Number.isFinite(approval) || approval > cutoff) {
+    return ["reference label is missing approval at the decision time"];
+  }
+  if (!authority.review_due || authority.review_due < new Date(cutoff).toISOString().slice(0, 10)) {
+    return ["reference label review is overdue at the decision time"];
+  }
+  return [];
 }
 
 export function evaluationCaseSemanticErrors(evaluationCase, label = "evaluation case") {

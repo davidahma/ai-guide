@@ -25,6 +25,8 @@ The local process does not create OS-level sandboxing. Filesystem permission, de
 
 The event array in `engagement-state.json` is the authoritative local history. `audit.jsonl` is a human-readable diagnostic mirror. A response with `audit_mirror_status: degraded` means the state mutation committed but the mirror must be repaired or regenerated before relying on it for local troubleshooting; neither record is customer or release evidence.
 
+If a mutation reports `lock_cleanup_status: degraded`, preserve its operation ID and immutable result. Confirm the affected process has exited before clearing a stale lock. The committed state and its artifact remain available after cleanup.
+
 Idempotency receipts retain compact mutation results. A first decision-packet export includes a bounded preview, while an exact replay returns the immutable path and digests with `preview_omitted_from_replay: true`; the preview is not duplicated into long-lived state. Packet sections use byte budgets and report included and omitted counts. Status projections use explicit offsets and byte budgets. The state file has a hard size ceiling and a failed over-limit mutation does not replace the prior valid state.
 
 Status pages are live projections rather than snapshot cursors. Callers must compare `state_digest` between pages and restart pagination if it changes during a read sequence.

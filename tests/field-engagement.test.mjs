@@ -157,6 +157,10 @@ test("the invoice engagement preserves one navigable evidence chain without over
   assert.match(valueCase, /A review-only packet cannot establish a verified ledger outcome/);
   assert.match(valueCase, /Rejecting an incorrect or unsupported packet does not count/);
   assert.match(valueCase, /No-action cases do not enter this ledger-correction denominator; their handling costs still count/);
+  assert.match(valueCase, /require positive net value after full cost and residual loss/);
+  assert.match(valueCase, /Stop or reshape if value after full cost and residual loss is zero or negative/);
+  const lossAtIndividualThresholds = 200 * (6 - 5 * 55 / 60);
+  assert.match(valueCase, new RegExp(`\\$${lossAtIndividualThresholds.toFixed(2).replace(".", "\\.")} monthly loss`));
 
   const adoption = bodies[4];
   for (const phrase of [
@@ -222,6 +226,10 @@ test("discovery reconciles strategy, operating reality, and the candidate value 
   }
   assert.match(playbook, /surveys and transcripts may stage hypotheses/i);
   assert.match(playbook, /customer visibility is a useful candidate-generation lens, not a universal priority rule/i);
+  assert.match(playbook, /\| Opportunity ranking .*\| Which eligible opportunity should we investigate first\?/);
+  assert.match(playbook, /\| Readiness ratings .*\| What must be observed or tested before chartering this workflow\?/);
+  assert.match(playbook, /apply the four hard gates individually/);
+  assert.match(playbook, /high-impact invoice workflow stays in discovery when no verifier can accept its outcome/);
   assert.match(discovery, /do not treat executive sponsorship, interview volume, a survey, or a roadmap as proof/i);
   assert.match(sourceIndex, /## S36 — Alex Lieberman: AI roadmap field account/);
   assert.match(sourceIndex, /## S37 — Mark Ajzenstadt: customer-interaction use-case lens/);

@@ -47,6 +47,7 @@
   "failure_modes": [
     {"code": "POLICY_DENIED", "class": "authorization", "retry": false, "retry_safety": "never", "escalate": true},
     {"code": "STALE_EVIDENCE", "class": "validation", "retry": false, "retry_safety": "never", "escalate": true},
+    {"code": "IDEMPOTENCY_CONFLICT", "class": "validation", "retry": false, "retry_safety": "never", "escalate": true},
     {"code": "TIMEOUT", "class": "retryable", "retry": true, "retry_safety": "idempotent_replay", "escalate": false},
     {"code": "UNAVAILABLE", "class": "retryable", "retry": true, "retry_safety": "idempotent_replay", "escalate": false}
   ],

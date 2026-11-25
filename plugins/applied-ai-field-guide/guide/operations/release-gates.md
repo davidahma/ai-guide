@@ -15,8 +15,9 @@ These review milestones apply to every selected decision mechanism. The table be
 | Gate decision | Solution-release representation |
 | --- | --- |
 | Design packet under construction | `release_status: draft` |
-| Sandbox or shadow candidate under review | `release_status: review`, `rollout.strategy: shadow`, `traffic_percent: 0` |
+| Sandbox-tested candidate under review | `release_status: review`, `rollout.strategy: shadow`, `traffic_percent: 0` |
 | Approved candidate before deployment | `release_status: approved` with four digest-bound approvals |
+| Active shadow deployment | `release_status: deployed`, `rollout.strategy: shadow`, `traffic_percent: 0` and deployment evidence |
 | Running canary | `release_status: deployed`, `rollout.strategy: canary`, and deployment evidence |
 | Bounded or expanded segment | `release_status: deployed`, `rollout.strategy: bounded_segment` or `full_segment` |
 | Reverted release | `release_status: rolled_back` with rollback evidence |
@@ -25,6 +26,16 @@ These review milestones apply to every selected decision mechanism. The table be
 `paused`, `remediated`, and `retirement_planned` are service-control states outside the model/agent release-status vocabulary. Preserve the last admitted manifest, record the operational decision, and issue a new digest-bound release or retirement record before resuming or changing deployment.
 
 For a deterministic, optimization, or classical-ML-only system, use the target software delivery system to retain equivalent immutable design, build, configuration, data/policy, evaluation, approval, deployment, rollback, and retirement evidence. Do not create placeholder agent-system, behavior-bundle, evaluation-report, or solution-release artifacts. The gates and control requirements below do not become optional.
+
+### Follow one invoice candidate from sandbox to canary
+
+| Stage | Authorized inputs and effect boundary | People and next decision |
+| --- | --- | --- |
+| Sandbox | The [committed invoice candidate](../examples/invoice-exception/solution-release.json) exercises synthetic fixtures with a simulated ledger. No target traffic, people, or effects are admitted. | The test owner presents evidence for review. The receiving service owner and required approvers decide whether to admit a shadow trial. |
+| Active shadow | The service and data owners authorize a named sample or mirrored input under an explicit access, isolation, and retention policy. Zero traffic means zero authoritative routing to the candidate. The existing queue owns every disposition and posting decision. | Named reviewers grade the candidate's packets independently. The rollout owner verifies deployment and records the observed sample, reviewer burden, and isolation. The gate owner decides whether the results support consideration of a live canary. |
+| Live canary | The service owner admits a defined share of live work to the review surface under the approved release and stop conditions. Candidate authority is limited to staging proposals. The named reviewer retains approval and posting authority. | On-call and reviewers work the bounded queue. The service owner and independent verifier use concurrent control, effect readback, and tested rollback to decide whether to continue, hold, or revert. |
+
+The deployment record proves which build was deployed and what traffic was routed. Judge shadow effectiveness separately using the observed sample and its declared acceptance rule. The [worked canary](#worked-canary-decision-invoice-review-packets) is a separate hypothetical decision.
 
 ## Gate 0 — Design
 
@@ -113,7 +124,7 @@ Use this gate whenever effect authority expands. For a non-agent route, read aut
 
 | Requirement | Pass condition |
 | --- | --- |
-| Scope | One named behavior segment and effect class |
+| Scope | One named behavior segment and effect class, with the frozen policy digest bound to the release |
 | Holdout | The frozen operating policy clears its reliability lower bound and risk constraints on disjoint held-out cases; terminal replay is used only for trajectory-invariant oversight, otherwise the policy is rerun or simulated in the loop |
 | Incidents | No open high/critical control failure |
 | Error budget | Within SLO window |
@@ -130,6 +141,13 @@ Promotion unit:
   "version": "1.2.0",
   "target_segments": ["named-workflow-segment"],
   "autonomy_level": "execute_reversible",
+  "authority_expansion": {
+    "segment": "named-workflow-segment",
+    "effect_class": "reversible",
+    "policy_digest": "sha256:...",
+    "success_metric": "accepted_outcome_rate",
+    "minimum_reliability": 0.95
+  },
   "release_digest": "sha256:...",
   "evaluation_report_uri": "reports/workflow-agent-1.2.0.json",
   "approvals": [
@@ -141,7 +159,7 @@ Promotion unit:
 }
 ```
 
-This is an excerpt, not a complete model/agent release artifact. When that route is selected, use the [solution-release template](../templates/solution-release.json) and [change management](change-management.md) for the full release bundle and rollback evidence. Other routes retain the equivalent digest-bound record in the target software delivery system. Production approval is invalidated when any bound behavioral dependency changes.
+This excerpt shows what the approval binds. Use the [solution-release template](../templates/solution-release.json) and [change management](change-management.md) for the full model or agent release bundle and rollback evidence. `authority_expansion` connects the release to qualified evaluation evidence for the same segment, effect class, frozen policy, success metric and reliability threshold. The repository requires proof for positive rollout traffic when the bound tools can stage or commit effects. At the target gate, compare the admitted authority with the proposed boundary, including any new resources, policies or destinations within the same effect class. Other routes retain the equivalent digest-bound record in the target software delivery system. Production approval is invalidated when any bound behavioral dependency changes.
 
 Controls: `ADP-002`, `DEL-001`, `CTX-004`, `IAM-002`, `IAM-003`, `SEC-005`, `REL-001`, `REL-003`, `REL-004`, `REL-005`, `STA-002`, `EVA-001`, `EVA-003`, `EVA-006`.
 

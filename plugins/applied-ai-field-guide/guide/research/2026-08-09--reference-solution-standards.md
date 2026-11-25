@@ -40,6 +40,7 @@ The application-security supplement below was reviewed on 2026-10-15; the earlie
 - **Reviewed:** 2026-08-09
 - **Portable finding:** shared telemetry names and signal conventions can improve cross-service operability when their version and stability are explicit.
 - **Limit:** generic semantic conventions do not supply workflow outcome, authorization, external-effect, readback, customer-health, or value semantics for a specific system.
+- **GenAI update (2026-11-25):** GenAI conventions now have a separate registry. See [R26-99](2026-11-25--agent-evaluation-and-operating-evidence.md#r26-99) and the [pinned synthetic export](../operations/telemetry-contract.md#optional-opentelemetry-mapping).
 
 ### RS-05: Application security verification
 

@@ -75,7 +75,23 @@ export function agentArtifactReferences(agent) {
 }
 
 export function evaluationReportReferences(report) {
+  const qualification = report.deployment_qualification;
+  const execution = qualification?.execution_evidence;
   return [
+    {
+      field: "deployment_qualification.execution_evidence.policy_uri",
+      kind: "qualification_policy",
+      uri: execution?.policy_uri,
+      digest: qualification?.oversight_policy?.digest,
+      requireRegularFile: true,
+    },
+    {
+      field: "deployment_qualification.execution_evidence.observations_uri",
+      kind: "qualification_observations",
+      uri: execution?.observations_uri,
+      digest: execution?.observations_digest,
+      requireRegularFile: true,
+    },
     {
       field: "system.agent_system_uri",
       kind: "agent_system",
@@ -271,6 +287,9 @@ export function classifyReference(candidate, allowedExternalSchemes) {
 
 export function governedDocumentSchema(document) {
   if (!document || typeof document !== "object" || Array.isArray(document)) return null;
+  if (document.execution_mode && document.policy_digest && document.environment_digest && Array.isArray(document.qualification)) {
+    return "schemas/qualification-observations.schema.json";
+  }
   if (document.record_id && document.inherited_brief && document.roles && Array.isArray(document.claims)) {
     return "schemas/engagement-reframe.schema.json";
   }

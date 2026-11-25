@@ -128,7 +128,22 @@ test("the engagement conductor can reach every focused lifecycle route", async (
     if (skillName === "run-ai-engagement") continue;
     assert.ok(conductor.includes(`$${skillName}`), `run-ai-engagement cannot route to ${skillName}`);
   }
-  assert.match(conductor, /reads governed data or can stage or execute an effect/);
+});
+
+test("the conductor routes the current decision without reopening verified boundaries", async () => {
+  const conductor = await readFile(path.join(skillsRoot, "run-ai-engagement", "SKILL.md"), "utf8");
+  const routes = [...conductor.matchAll(/^\| ([^|]+) \| `\$(\S+?)` \| ([^|]+) \|$/gm)];
+  assert.deepEqual(routes.map(([, situation, route]) => [situation, route]), [
+    ["New governed read or effect needs admission", "secure-ai-action-boundary"],
+    ["Existing evaluation needs to run inside a current, unchanged boundary", "build-ai-evaluation"],
+    ["Active incident requires containment", "operate-ai-service"],
+    ["Material permission change must be admitted", "secure-ai-action-boundary"],
+  ]);
+  assert.match(routes[0][3], /held pending exact-scope verification/);
+  assert.match(routes[1][3], /Bind the verified boundary revision and run inside its scope/);
+  assert.match(routes[2][3], /authorized containment procedure and verify the effect/);
+  assert.match(routes[3][3], /held until the new boundary is verified/);
+  assert.match(conductor, /expired or unverified boundary evidence as a reason to hold the affected path/);
 });
 
 test("data readiness is progressively routed through the lifecycle skills", async () => {
@@ -342,7 +357,8 @@ test("public navigation progressively discloses the Guide, Handbook, Engineering
   assert.match(readme, /They are not separate frameworks/);
   assert.match(guide, /They are three depths of one method/);
 
-  assert.match(readme, /npx skills add davidahma\/ai-guide/);
+  assert.match(readme, /npx skills@\d+\.\d+\.\d+ add davidahma\/ai-guide@(?:v\d+\.\d+\.\d+|[a-f0-9]{40})/);
+  assert.match(readme, /restore uses the recorded commit/);
   assert.match(readme, /The guide is complete as documentation/);
   assert.ok(agents.indexOf("## Repository map") < agents.indexOf("## Skill routes"));
   assert.ok(llms.indexOf("## Core entry points") < llms.indexOf("## Optional task skills"));

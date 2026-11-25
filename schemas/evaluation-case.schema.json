@@ -12,6 +12,7 @@
     "system_id": { "$ref": "#/$defs/id" },
     "title": { "type": "string", "minLength": 5 },
     "owner": { "type": "string", "minLength": 2 },
+    "target_segment": { "type": "string", "minLength": 2 },
     "last_reviewed": { "type": "string", "format": "date" },
     "risk": {
       "type": "object",
@@ -108,6 +109,7 @@
         "basis": { "enum": ["source_of_truth", "deterministic_policy", "expert_judgment", "observed_outcome", "synthetic_invariant"] },
         "source_id": { "$ref": "#/$defs/id" },
         "source_revision": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "status": { "enum": ["approved", "disputed", "superseded"] },
         "source_owner": { "type": "string", "minLength": 2, "maxLength": 128 },
         "data_classification": { "enum": ["public", "internal", "confidential", "restricted"] },
         "label_author": { "type": "string", "minLength": 2, "maxLength": 128 },

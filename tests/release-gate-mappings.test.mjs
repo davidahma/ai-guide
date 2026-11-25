@@ -66,3 +66,18 @@ test("worked canary separates concurrent control, containment, and inconclusive 
   assert.match(releaseGates, /do not replay an uncertain effect/);
   assert.match(releaseGates, /68 candidate cases reached a known deadline result against the planned minimum of 100\. \*\*Hold; do not expand\./);
 });
+
+test("the invoice journey distinguishes a sandbox candidate, active shadow, and live canary", () => {
+  const practice = readFileSync(
+    new URL("../examples/invoice-exception/document-review/practice.md", import.meta.url),
+    "utf8",
+  );
+  assert.match(releaseGates, /Sandbox-tested candidate under review[^\n]+`release_status: review`/);
+  assert.match(releaseGates, /Active shadow deployment[^\n]+`release_status: deployed`[^\n]+`rollout.strategy: shadow`[^\n]+`traffic_percent: 0` and deployment evidence/);
+  assert.match(releaseGates, /Zero traffic means zero authoritative routing to the candidate/);
+  assert.match(releaseGates, /Running canary[^\n]+`rollout.strategy: canary`/);
+  assert.match(releaseGates, /Candidate authority is limited to staging proposals/);
+  assert.match(practice, /offline rehearsal with a predeclared cutoff/);
+  assert.match(practice, /conditional on target admission/);
+  assert.match(practice, /Consider a live canary only after shadow results and target readiness clear the release gate/);
+});

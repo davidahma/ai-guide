@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { reportCaseOutcomes } from "./case-outcomes.mjs";
 import { baseInput, createInvoiceWorld } from "./invoice-world-fixture.mjs";
 import { referenceInternals, runInvoiceException } from "./reference-loop.mjs";
 import { expectedSolutionReleaseDigest } from "../../scripts/contract-invariants.mjs";
@@ -21,7 +22,10 @@ async function stageApprovedDirectRequest(deps) {
     business_operation_id: businessOperationId,
     action: "commit_resolution",
   });
-  const proposalDigest = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+  const proposal = { action: "release_duplicate_hold" };
+  const proposalDigest = referenceInternals.digest({
+    tenant_id: "tenant-a", invoice_id: "inv-100", invoice_revision: "7", policy_revision: "policy-18", proposal,
+  });
   const caller = {
     id: "user-1",
     tenant_id: "tenant-a",
@@ -47,7 +51,7 @@ async function stageApprovedDirectRequest(deps) {
     invoice_revision: "7",
     policy_revision: "policy-18",
     policy_decision_id: stageDecision.decision_id,
-    proposal: { action: "release_duplicate_hold" },
+    proposal,
     proposal_digest: proposalDigest,
     idempotency_key: operationId,
   });
@@ -84,7 +88,9 @@ async function stageApprovedDirectRequest(deps) {
     proposal_digest: proposalDigest,
     approval_id: approval.approval_id,
     idempotency_key: operationId,
-    expected_postcondition_digest: referenceInternals.digest({ status: "resolved", resolution_count: 1 }),
+    expected_postcondition_digest: referenceInternals.digest({
+      status: "resolved", resolution_count: 1, applied_proposal_digest: proposalDigest,
+    }),
   };
 }
 
@@ -128,6 +134,7 @@ test("authorized resolution commits and verifies exactly one effect", async () =
   assert.equal(state.proposals.size, 1);
   assert.equal(state.effects.size, 1);
   assert.equal(result.readback.status, "resolved");
+  assert.equal(result.readback.applied_proposal_digest, result.effect_receipt.proposal_digest);
   assert.ok(state.events.some((event) => event.state === "readback_verified"));
 });
 
@@ -338,9 +345,64 @@ test("budget exhaustion after an effect still performs readback before stopping"
   assert.equal(result.effect_receipt.readback.status, "matched");
 });
 
-test("duplicate delivery reuses stable proposal and effect receipts", async () => {
+test("a transport failure after commit is recovered by independent readback", async () => {
   const { deps, state } = createInvoiceWorld();
+  const commitResolution = deps.commitResolution;
+  deps.commitResolution = async (request, context) => {
+    await commitResolution(request, context);
+    throw new Error("Connection closed without a receipt response");
+  };
+
+  const result = await runInvoiceException(baseInput, deps);
+
+  assert.equal(result.state, "completed");
+  assert.equal(result.stop_reason, "completed_after_reconciliation");
+  assert.equal(result.trace.find((event) => event.state === "effect_unknown").details.error.code, "COMMIT_OUTCOME_UNKNOWN");
+  assert.ok(result.trace.some((event) => event.state === "effect_recovered"));
+  assert.equal(state.effectCreations, 1);
+  assert.equal(state.commitRequests.length, 1);
+  assert.equal(state.readbackRequests.length, 1);
+  assert.equal(result.effect_receipt.readback.status, "matched");
+});
+
+test("a failed dispatched commit without readback evidence opens a reconciliation incident", async () => {
+  const { deps, state } = createInvoiceWorld();
+  deps.commitResolution = async () => { throw new Error("Connection closed without a receipt response"); };
+  deps.readbackInvoice = async () => ({ last_effect: null });
+
+  const result = await runInvoiceException(baseInput, deps);
+
+  assert.equal(result.state, "escalated");
+  assert.equal(result.stop_reason, "readback_denied");
+  assert.equal(result.incident_id, "incident-1");
+  assert.equal(state.effectCreations, 0);
+  assert.ok(result.trace.some((event) => event.state === "effect_unknown"));
+  assert.ok(result.trace.every((event) => event.state !== "effect_recovered"));
+});
+
+test("a deadline that expires before commit dispatch leaves no effect to reconcile", async () => {
+  const { deps, state } = createInvoiceWorld();
+  const emit = deps.emit;
+  let clock = 0;
+  deps.monotonicNowMs = () => clock;
+  deps.emit = async (event) => {
+    await emit(event);
+    if (event.state === "commit_authorized") clock = 100000;
+  };
+
+  const result = await runInvoiceException(baseInput, deps);
+
+  assert.equal(result.stop_reason, "budget_exhausted");
+  assert.equal(result.error_code, "BUDGET_TIME_EXCEEDED");
+  assert.equal(state.commitRequests.length, 0);
+  assert.equal(state.readbackRequests.length, 0);
+  assert.ok(result.trace.every((event) => event.state !== "effect_unknown"));
+});
+
+test("duplicate delivery reuses stable proposal and effect receipts", async () => {
+  const { deps, state } = createInvoiceWorld({ costUsd: 0.11 });
   const first = await runInvoiceException(baseInput, deps);
+  state.setCostUsd(0.13);
   const second = await runInvoiceException(baseInput, deps);
 
   assert.equal(first.state, "completed");
@@ -357,6 +419,24 @@ test("duplicate delivery reuses stable proposal and effect receipts", async () =
   assert.equal(second.effect_receipt.run_id, second.effect_receipt.service_receipt.subject.run_id);
   assert.equal(state.proposals.size, 1);
   assert.equal(state.effects.size, 1);
+
+  const report = reportCaseOutcomes({
+    admissions: [{ caseId: "invoice-1", arrivedAt: 10 }],
+    attempts: [first, second].map((run) => ({
+      caseId: "invoice-1", runId: run.run_id, recordedAt: 11, disposition: run.state,
+      attemptCostCents: Math.round(run.trace.at(-1).telemetry["agent.cost.usd"] * 100),
+    })),
+    verifications: [{
+      caseId: "invoice-1", revision: 1, occurredAt: 11, observedAt: 12,
+      disposition: first.effect_receipt.readback.status === "matched" ? "accepted" : "rejected",
+    }],
+    windowStart: 0, windowEnd: 15, asOf: 15,
+  });
+  assert.deepEqual(report, {
+    eligibleCases: 1, acceptedCases: 1, pendingCases: 0,
+    attempts: 2, attemptDispositions: { completed: 2, failed: 0, abandoned: 0, pending: 0 },
+    attemptCompletionRate: 1, attemptCostCents: 24, acceptedOutcomeRate: 1,
+  });
 });
 
 test("changed proposal for the same business operation cannot create a second effect", async () => {
@@ -632,6 +712,78 @@ test("invalid service receipt after an effect enters readback reconciliation", a
   assert.equal(state.readbackResponses.length, 1);
   assert.equal(state.incidents, 1);
   assert.equal(result.effect_receipt, undefined);
+});
+
+test("an unverified effect and unverified readback require manual reconciliation", async () => {
+  const { deps, state } = createInvoiceWorld();
+  deps.verifyServiceReceipt = async () => ({ verified: false });
+  deps.verifyReadbackAttestation = async () => "false";
+  const result = await runInvoiceException(baseInput, deps);
+
+  assert.equal(result.state, "escalated");
+  assert.equal(result.stop_reason, "service_receipt_invalid");
+  assert.equal(result.effect_receipt, undefined);
+  assert.equal(state.incidents, 1);
+  assert.equal(state.compensations, 0);
+});
+
+test("malformed authorization or verification does not affirm a decision", async () => {
+  for (const [action, stop] of [
+    ["stage_resolution", "policy_denied"],
+    ["commit_resolution", "policy_denied_before_commit"],
+  ]) {
+    const { deps, state } = createInvoiceWorld();
+    const authorize = deps.authorize;
+    deps.authorize = async (request) => {
+      const decision = await authorize(request);
+      return request.action === action ? { ...decision, allow: "false" } : decision;
+    };
+    assert.equal((await runInvoiceException(baseInput, deps)).stop_reason, stop);
+    assert.equal(state.commitRequests.length, 0);
+    assert.equal(state.effectCreations, 0);
+  }
+  for (const verifier of ["verifyServiceReceipt", "verifyReadbackAttestation", "verifyReadback"]) {
+    const { deps, state } = createInvoiceWorld();
+    deps[verifier] = async () => ({ verified: false });
+    const result = await runInvoiceException(baseInput, deps);
+    assert.notEqual(result.state, "completed");
+    assert.equal(result.effect_receipt, undefined);
+    assert.equal(state.incidents, 1);
+    assert.equal(state.compensations, 0);
+  }
+});
+
+test("a signed readback of a different applied proposal fails the postcondition", async () => {
+  const { deps, state } = createInvoiceWorld({
+    appliedProposal: { action: "release_duplicate_hold", amount: 25, rationale_code: "MANUAL_ADJUSTMENT" },
+  });
+  const result = await runInvoiceException(baseInput, deps);
+  assert.equal(state.invoice.status, "resolved");
+  assert.equal(state.effectCreations, 1);
+  assert.equal(result.state, "postcondition_failed");
+  assert.equal(result.effect_receipt.readback.status, "mismatched");
+  assert.notEqual(result.effect_receipt.proposal_digest, state.readbackResponses[0].applied_proposal_digest);
+  assert.equal(state.incidents, 1);
+});
+
+test("a signed commit at the expiry of its bound approval cannot prove completion", async () => {
+  let now = "2026-08-07T17:00:00.000Z";
+  const expiresAt = "2026-08-07T17:01:00.000Z";
+  const { deps, state } = createInvoiceWorld({ approvalExpiresAt: expiresAt, committedAt: expiresAt });
+  deps.now = () => now;
+  const commitResolution = deps.commitResolution;
+  deps.commitResolution = async (...args) => {
+    const result = await commitResolution(...args);
+    now = "2026-08-07T17:02:00.000Z";
+    return result;
+  };
+  const result = await runInvoiceException(baseInput, deps);
+  assert.equal(state.effectCreations, 1);
+  assert.equal(result.state, "escalated");
+  assert.equal(result.stop_reason, "service_receipt_invalid");
+  assert.equal(result.effect_receipt, undefined);
+  assert.equal(state.incidents, 1);
+  assert.equal(state.compensations, 0);
 });
 
 test("unsigned readback-attestation issuer metadata cannot be substituted", async () => {

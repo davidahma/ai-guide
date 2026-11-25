@@ -16,7 +16,19 @@ Write five lines: user, decision, accepted outcome, verifier, and maximum permit
 
 ## Round 2 — Observe difficult documents
 
-Open the [review surface](index.html) and try documents A–D. Compare the rules baseline with manual entry. Correct a draft, reject one and escalate one. Pause and resume. Download your practice history. Your recorded time is a self-directed exercise measurement, not customer productivity evidence.
+If you are reading this on GitHub, clone the public guide and serve the invoice example on loopback with Python 3:
+
+```sh
+git clone https://github.com/davidahma/ai-guide.git
+cd ai-guide
+python3 -m http.server 8123 --bind 127.0.0.1 --directory examples/invoice-exception
+```
+
+Open `http://127.0.0.1:8123/document-review/` in a browser and stop the server when finished. In the generated guide site, launch the [bundled review surface](index.html) directly. The exercise uses the supplied synthetic documents and needs no API key.
+
+Start with `doc-b` and the rules baseline. The proposal escalates because the invoice uses prose. Use the source to enter invoice INV-102, currency `USD`, and amount `9525` cents. Keep the source quote, enter a fictional reviewer name and a rationale, then confirm the source check and accept the draft. Download the practice history. Its record contains both the initial proposal and your corrected fields.
+
+Continue with documents A–D. Compare the rules baseline with manual entry, reject a proposal, escalate one, and try pause and resume. Your recorded time measures this self-directed exercise.
 
 Then inspect [all eight source documents](sources.mjs). What new evidence would you need for E–H? In your one-page decision, distinguish a structural check, a source-supported fact and human authority. An instruction embedded in an invoice is not a policy update.
 
@@ -40,15 +52,15 @@ Update your disposition without erasing R1. Show which scope, value, evaluation 
 
 Source packet R3: the same AP technology team will build and operate this internally. There is no delivery vendor to “exit.” The team has one operator, no backup, and no rehearsed recovery path. What would an operating-capability review require before pilot traffic? Do not invent an external handoff; do not waive support, capacity or recovery evidence.
 
-## Round 5 — A narrow path earns a limited pilot
+## Round 5 — Evidence for a limited pilot proposal
 
 This is an alternate synthetic branch for practice, not the current decision in the worked engagement.
 
-Source packet R4: over a new predeclared two-week shadow trial, two AP reviewers process 40 eligible fixed-format invoices. The rules baseline produces 38 correct source-supported drafts and escalates two unreadable documents. Reviewers accept all 38 drafts after source checks, report no missed corrections, and complete every case within the declared queue limit. The backup operator restores the local practice service from a clean fixture and runs the rollback exercise. Controller policy still prohibits automatic posting. The metric owner verifies the counts against the frozen eligible-case list; the technical owner binds the exact fixture, code, test, and policy revisions.
+Source packet R4 describes a two-week offline rehearsal with a predeclared cutoff. Two fictional AP reviewers process 40 synthetic fixed-format invoices. The rules baseline produces 38 correct source-supported drafts and escalates two unreadable documents. Reviewers accept all 38 drafts after source checks, report no missed corrections, and complete every case within the declared queue limit. The backup operator restores the local practice service from a clean fixture and runs the rollback exercise. Controller policy still prohibits automatic posting. The metric owner checks the counts against the frozen fixture list. The technical owner binds the exact fixture, code, test, and policy revisions.
 
-Write the gate decision. A defensible answer permits a limited **review-only** pilot for that fixed-format segment, retains the manual queue and reviewer approval, and stops on a source mismatch, capacity breach, policy change, or unverified release. It does not approve automatic posting or claim realized savings. Name what remains unproved: target authentication, durable state, tamper-evident audit, representative long-run behavior, support load, and sustained business value.
+Write the gate decision. A defensible answer proposes a limited **review-only** trial for that fixed-format segment, conditional on target admission. Keep the manual queue and reviewer approval. Name the work the team still owes on target authentication, durable state, tamper-evident audit, representative behavior, support load, and economics. Define stop conditions for a source mismatch, capacity breach, policy change, or unverified release.
 
-This branch is an offline, local exercise over fictional data. Target data and traffic remain blocked until authentication, authorization, audit, privacy, operational-readiness, and release gates pass in the target environment.
+The [release gates](../../../operations/release-gates.md#follow-one-invoice-candidate-from-sandbox-to-canary) describe the evidence needed to admit target inputs for active shadow and to route live work in a canary. Target data and traffic remain blocked until the applicable authentication, authorization, audit, privacy, operational-readiness, and release gates pass in the target environment.
 
 ## Review rubric
 
@@ -71,9 +83,9 @@ Score each row 0 (absent/wrong), 1 (named but unsupported), or 2 (source-linked,
 
 **Simpler build:** “For fixed-format documents, retain deterministic parsing plus reviewer checks. Escalate other formats; do not purchase model complexity until its incremental benefit is measured.” This is defensible only if the eligible segment and fallback remain explicit.
 
-**Limited review-only pilot:** “The exact fixed-format rules build may enter a bounded pilot for the predeclared segment because the new shadow run, source checks, capacity result, backup recovery, and metric-owner verification meet that local gate. Keep reviewer approval and the manual queue. Do not connect posting or expand the population until the missing target-system and operating evidence is supplied.” This applies only to R4's alternate branch.
+**Conditional review-only trial proposal:** “Use the local rehearsal to propose a bounded target trial for the fixed-format segment. Get target approval before using governed inputs and keep dispositions in the manual queue during active shadow. Consider a live canary only after shadow results and target readiness clear the release gate.” This applies only to R4's alternate branch.
 
-There is no defensible “ship automatic payment” answer in this packet. R1–R3 lack authority, economic proof, and operational readiness. R4 supports only the narrow review-only pilot described above. A stronger answer says exactly which evidence changed the decision and which authority remains unchanged.
+R1–R3 lack authority, economic proof, and operational readiness. R4 supports a conditional trial proposal under the controller's existing posting restriction. Name the evidence that changed the decision and the owner of each outstanding gate.
 
 ## Next route
 

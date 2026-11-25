@@ -46,9 +46,11 @@ test("Escape closes search even while the search field has text", async () => {
     querySelector: (selector) => selector === "#site-search" ? dialog : null,
     addEventListener: (name, handler) => handlers.set(name, handler),
     activeElement: { matches: () => true },
+    body: { dataset: { siteRoot: "./" } },
+    baseURI: "https://example.test/",
   };
   const source = await readFile(path.join(root, "site/assets/site.js"), "utf8");
-  vm.runInNewContext(source, { document, window: { matchMedia: () => ({ matches: false }) } });
+  vm.runInNewContext(source, { URL, document, window: { matchMedia: () => ({ matches: false }) } });
   const event = { key: "Escape", preventDefault() { prevented = true; } };
   handlers.get("keydown")(event);
   assert.equal(prevented, true, "do not let the input consume Escape before the dialog");
@@ -58,6 +60,25 @@ test("Escape closes search even while the search field has text", async () => {
   handlers.get("keydown")(event);
   assert.equal(prevented, false, "leave Escape outside search unchanged");
   assert.equal(closeCount, 1);
+});
+
+test("search results resolve under the actual site mount from a nested page", async () => {
+  const source = await readFile(path.join(root, "site/assets/site.js"), "utf8");
+  const article = await readFile(routeFile("/practice/invoice-review/"), "utf8");
+  const siteRoot = article.match(/data-site-root="([^"]+)"/)[1];
+  for (const mount of ["", "/ai-guide"]) {
+    const document = {
+      querySelector: () => null,
+      addEventListener() {},
+      createElement: () => ({ append(...nodes) { this.children = nodes; } }),
+      body: { dataset: { siteRoot } },
+      baseURI: `https://example.test${mount}/practice/invoice-review/`,
+    };
+    const context = vm.createContext({ URL, document, window: { matchMedia: () => ({ matches: false }) } });
+    vm.runInContext(source, context);
+    const result = vm.runInContext('createResult({ route: "/practice/invoice-policy-retrieval/", title: "Retrieval", description: "Evidence" })', context);
+    assert.equal(result.children[0].href, `https://example.test${mount}/practice/invoice-policy-retrieval/`);
+  }
 });
 
 test("site configuration defines one canonical source per route", () => {

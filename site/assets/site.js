@@ -4,6 +4,7 @@ const closeButton = document.querySelector("[data-search-close]");
 const input = document.querySelector("#site-search-input");
 const results = document.querySelector("#site-search-results");
 const guideNavigation = document.querySelector(".side-nav details");
+const siteRoot = new URL(document.body.dataset.siteRoot, document.baseURI);
 
 let searchIndex;
 let searchSequence = 0;
@@ -29,7 +30,7 @@ function createResult(item) {
   const entry = document.createElement("li");
   entry.className = "search-result";
   const link = document.createElement("a");
-  link.href = `${document.body.dataset.siteBase || ""}${item.route}`;
+  link.href = new URL(item.route.slice(1), siteRoot).href;
   const title = document.createElement("span");
   title.className = "search-result-title";
   title.textContent = item.title;

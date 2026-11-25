@@ -11,15 +11,15 @@
     "source_commit": "c4b1d525b8a5ac6f2cc7fafad9639bd08f0de786",
     "publisher": "reference-example-unverified",
     "publisher_verified": false,
-    "build_attestation_digest": "sha256:474174846aa8688bad81df0f365f4fe461405c1813653bd543fc023b81f4fcc8",
-    "artifact_digest": "sha256:55e3d2f651125025fd3f1af149a946c04e39c00a91e5aa4dd9b3e191ce938ab0",
+    "build_attestation_digest": "sha256:5cf613f06bfe727d8e403d9c341d6c3f56c32fa39eb33d80289ff3efe2f006bd",
+    "artifact_digest": "sha256:f2ff6498097c0d24d2348b86d23e49de02ecf58ca7923827e13cb7de5d47bf0a",
     "attestation": {
       "format": "in_toto_statement",
       "algorithm": "Ed25519",
       "key_id": "unverified-reference-builder-key",
       "issuer": "reference-build-example",
-      "subject_artifact_digest": "sha256:55e3d2f651125025fd3f1af149a946c04e39c00a91e5aa4dd9b3e191ce938ab0",
-      "subject_tool_contract_digest": "sha256:b86413b438a24b6f118024177938ef75a8a7a979aa3623188efbb7c00f67caec",
+      "subject_artifact_digest": "sha256:f2ff6498097c0d24d2348b86d23e49de02ecf58ca7923827e13cb7de5d47bf0a",
+      "subject_tool_contract_digest": "sha256:45c9840a290ea0650ba1cfdca41bb8a432f115deeb35fa65169c4928e3adf873",
       "predicate_type": "https://slsa.dev/provenance/v1",
       "location": "https://attestations.example.invalid/readback_invoice_effect_capability/2.0.0",
       "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -29,12 +29,12 @@
       "decision": "candidate",
       "capability_id": "readback_invoice_effect_capability",
       "capability_version": "2.0.0",
-      "artifact_digest": "sha256:55e3d2f651125025fd3f1af149a946c04e39c00a91e5aa4dd9b3e191ce938ab0",
-      "tool_contract_digest": "sha256:b86413b438a24b6f118024177938ef75a8a7a979aa3623188efbb7c00f67caec",
+      "artifact_digest": "sha256:f2ff6498097c0d24d2348b86d23e49de02ecf58ca7923827e13cb7de5d47bf0a",
+      "tool_contract_digest": "sha256:45c9840a290ea0650ba1cfdca41bb8a432f115deeb35fa65169c4928e3adf873",
       "authority_digest": "sha256:3753843b9a2083d7feb5d1bab7006228f746de5dea5733bb82e431964e2f28a3",
       "verified_at": "2026-08-07T15:00:00Z",
       "expires_at": "2026-08-08T15:00:00Z",
-      "decision_digest": "sha256:70b2ff9d3c42d4a1b5e88f3df436235420c26e276c47a7126776090cb7e0cd86"
+      "decision_digest": "sha256:909c6ed875bf9a2505d3fdcb327170ab6bd161d06ec0ca79546edfadf2da4590"
     },
     "sbom_uri": "invoice-reference-sbom.spdx",
     "sbom_digest": "sha256:8d3816722ddad1557dc5293c629b7f4ea56dfcc978ad2d11960eee1d9d7ff8cb",
@@ -46,15 +46,15 @@
     "entrypoint": "invoice-world-fixture/readback_invoice_effect",
     "executable_uri": "../invoice-world-fixture.mjs",
     "instruction_digest": null,
-    "executable_digest": "sha256:55e3d2f651125025fd3f1af149a946c04e39c00a91e5aa4dd9b3e191ce938ab0",
+    "executable_digest": "sha256:f2ff6498097c0d24d2348b86d23e49de02ecf58ca7923827e13cb7de5d47bf0a",
     "input_schema_digest": "sha256:fd391374fefbbbcb4bc1ac351971f53b9f660943e58f9c77b8074f1f655aeb25",
-    "output_schema_digest": "sha256:d42b5a27b11e87aa722ed5f330c48ecac6a53d47846759f0e6d4f3a5ed91f333",
+    "output_schema_digest": "sha256:4466a4c7c537f540594d9291cff9cd05dc26ed47c0ec064daccbf9f0b25feb43",
     "tool_contract": {
       "uri": "../tools/readback-invoice-effect.json",
       "tool_id": "readback_invoice_effect",
       "version": "2.0.0",
       "schema_version": "1.1.0",
-      "digest": "sha256:b86413b438a24b6f118024177938ef75a8a7a979aa3623188efbb7c00f67caec"
+      "digest": "sha256:45c9840a290ea0650ba1cfdca41bb8a432f115deeb35fa65169c4928e3adf873"
     }
   },
   "authority": {

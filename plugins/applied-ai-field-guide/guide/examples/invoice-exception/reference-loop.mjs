@@ -360,7 +360,7 @@ export async function runInvoiceException(input, deps) {
   if (context.invoice.revision !== input.invoice_revision) {
     return terminal("escalated", "stale_invoice_revision");
   }
-  if (!context.policy.current) {
+  if (context.policy.current !== true) {
     return terminal("escalated", "stale_policy");
   }
 
@@ -378,7 +378,7 @@ export async function runInvoiceException(input, deps) {
   );
   budgetStop = await stopBeforeEffectIfOverBudget();
   if (budgetStop) return budgetStop;
-  if (!validation.valid) {
+  if (validation.valid !== true) {
     return terminal("escalated", "validation_failed", { validation_error_codes: ["PROPOSAL_INVALID"] });
   }
   await transition("validated");
@@ -406,7 +406,7 @@ export async function runInvoiceException(input, deps) {
   await transition("stage_authorized", {
     decision_references: [{ decision_type: "authorization", decision_id: stageDecision.decision_id }],
   });
-  if (!stageDecision.allow) {
+  if (stageDecision.allow !== true) {
     return terminal("escalated", "policy_denied");
   }
 
@@ -473,7 +473,7 @@ export async function runInvoiceException(input, deps) {
     || !approval.expires_at
     || !Number.isFinite(expiresAtMs)
     || expiresAtMs <= authorizationTimeMs;
-  if (!approval.approved || approvalExpired || approvalTimeInvalid) {
+  if (approval.approved !== true || approvalExpired || approvalTimeInvalid) {
     const stopReason = approvalTimeInvalid
       ? "approval_time_invalid"
       : approvalExpired
@@ -507,7 +507,7 @@ export async function runInvoiceException(input, deps) {
   await transition("commit_authorized", {
     decision_references: [{ decision_type: "authorization", decision_id: commitDecision.decision_id }],
   });
-  if (!commitDecision.allow) {
+  if (commitDecision.allow !== true) {
     return terminal("escalated", "policy_denied_before_commit", { proposal_id: staged.proposal_id });
   }
 
@@ -517,7 +517,11 @@ export async function runInvoiceException(input, deps) {
     invoice_revision: context.invoice.revision,
   });
   const accountHash = digest(`${input.tenant_id}:accounts-payable-ledger`);
-  const expectedPostconditionDigest = digest({ status: "resolved", resolution_count: 1 });
+  const expectedPostconditionDigest = digest({
+    status: "resolved",
+    resolution_count: 1,
+    applied_proposal_digest: proposalDigest,
+  });
   const readbackRequestedAt = deps.now ? deps.now() : new Date().toISOString();
   const readbackRequestId = randomUUID();
   const commitRequest = {
@@ -552,10 +556,14 @@ export async function runInvoiceException(input, deps) {
   let completionReason = "completed";
   let effectState = "committed";
   let postEffectBudgetError = null;
+  let commitDispatched = false;
   try {
     effect = await awaitBoundary(
       "commit_resolution",
-      ({ signal }) => deps.commitResolution(commitRequest, { signal }),
+      ({ signal }) => {
+        commitDispatched = true;
+        return deps.commitResolution(commitRequest, { signal });
+      },
     );
   } catch (error) {
     if (error?.code === "POLICY_DENIED") {
@@ -564,23 +572,27 @@ export async function runInvoiceException(input, deps) {
     if (error?.code === "DIGEST_MISMATCH") {
       return terminal("escalated", "release_not_admitted", { error_code: error.code });
     }
-    if (!isBudgetDeadline(error) && (error?.code !== "TIMEOUT" || error.retryable !== true)) {
-      return terminal("escalated", "internal_error", { error_code: error?.code ?? "INTERNAL_ERROR" });
+    if (!commitDispatched) {
+      if (isBudgetDeadline(error)) throw error;
+      return terminal("escalated", "internal_error", { error_code: "INTERNAL_ERROR" });
     }
 
-    await transition("effect_unknown", { error: { code: error.code } });
     if (isBudgetDeadline(error)) postEffectBudgetError = error.code;
+    const timedOut = error?.code === "TIMEOUT" || postEffectBudgetError !== null;
+    const unknownEffectCode = postEffectBudgetError ?? (timedOut ? "TIMEOUT" : "COMMIT_OUTCOME_UNKNOWN");
+    await transition("effect_unknown", { error: { code: unknownEffectCode } });
     try {
       readback = await awaitBoundary(
         "readback_after_unknown_effect",
         ({ signal }) => deps.readbackInvoice(readbackRequest, { signal }),
         { recovery: true },
       );
+      if (!timedOut && !readback?.last_effect) throw new Error("readback did not confirm the dispatched effect");
     } catch (readbackError) {
       const incident = await awaitBoundary("open_reconciliation_incident", ({ signal }) => deps.openIncident({
         run_id: runId,
         severity: "SEV-1",
-        reason: "timeout_readback_denied",
+        reason: timedOut ? "timeout_readback_denied" : "commit_outcome_unknown",
       }, { signal }), { recovery: true });
       return terminal("escalated", postEffectBudgetError ? "budget_exhausted" : "readback_denied", {
         error_code: postEffectBudgetError ?? readbackError?.code ?? "READBACK_FAILED",
@@ -588,10 +600,10 @@ export async function runInvoiceException(input, deps) {
       });
     }
     if (!readback.last_effect) {
-      return terminal("escalated", postEffectBudgetError ? "budget_exhausted" : "timeout_exhausted", { error_code: error.code });
+      return terminal("escalated", postEffectBudgetError ? "budget_exhausted" : "timeout_exhausted", { error_code: unknownEffectCode });
     }
     effect = readback.last_effect;
-    completionReason = "completed_after_timeout_recovery";
+    completionReason = timedOut ? "completed_after_timeout_recovery" : "completed_after_reconciliation";
     effectState = "effect_recovered";
   }
 
@@ -618,16 +630,20 @@ export async function runInvoiceException(input, deps) {
     expected_postcondition_digest: expectedPostconditionDigest,
     committed_at: signedSubject?.committed_at,
   };
+  const committedAtMs = Date.parse(signedSubject?.committed_at ?? "");
+  const receiptChronologyValid = Number.isFinite(committedAtMs)
+    && approvedAtMs <= committedAtMs
+    && committedAtMs < expiresAtMs;
   let serviceReceiptVerified = false;
   try {
-    serviceReceiptVerified = await awaitBoundary(
+    serviceReceiptVerified = (await awaitBoundary(
       "verify_service_receipt",
       ({ signal }) => deps.verifyServiceReceipt({
         receipt: effect?.service_receipt,
         expected_subject: expectedServiceSubject,
       }, { signal }),
       { recovery: true },
-    );
+    )) === true && receiptChronologyValid;
   } catch (error) {
     if (error?.code !== "RECOVERY_TIME_EXCEEDED") throw error;
   }
@@ -665,6 +681,7 @@ export async function runInvoiceException(input, deps) {
   const observedPostconditionDigest = digest({
     status: readback.status,
     resolution_count: readback.resolution_count,
+    applied_proposal_digest: readback.applied_proposal_digest ?? null,
   });
   const readbackSubject = {
     run_id: runId,
@@ -679,7 +696,6 @@ export async function runInvoiceException(input, deps) {
     observed_postcondition_digest: observedPostconditionDigest,
     verified_at: readback.readback_attestation?.subject?.verified_at,
   };
-  const committedAtMs = Date.parse(signedSubject?.committed_at ?? "");
   const verifiedAtMs = Date.parse(readbackSubject.verified_at ?? "");
   const verificationNowMs = Date.parse(deps.now ? deps.now() : new Date().toISOString());
   const readbackChronologyValid = Number.isFinite(approvedAtMs)
@@ -693,14 +709,14 @@ export async function runInvoiceException(input, deps) {
     && verifiedAtMs <= verificationNowMs;
   let readbackAttestationVerified = false;
   try {
-    readbackAttestationVerified = await awaitBoundary(
+    readbackAttestationVerified = (await awaitBoundary(
       "verify_readback_attestation",
       ({ signal }) => deps.verifyReadbackAttestation({
         readback,
         expected_subject: readbackSubject,
       }, { signal }),
       { recovery: true },
-    );
+    )) === true;
   } catch (error) {
     if (error?.code !== "RECOVERY_TIME_EXCEEDED") throw error;
   }
@@ -708,11 +724,11 @@ export async function runInvoiceException(input, deps) {
   if (readbackAttestationVerified && readbackChronologyValid) {
     try {
       postconditionVerified = expectedPostconditionDigest === observedPostconditionDigest
-        && await awaitBoundary(
+        && (await awaitBoundary(
           "verify_readback",
           ({ signal }) => deps.verifyReadback({ readback, proposal, effect, context }, { signal }),
           { recovery: true },
-        );
+        )) === true;
     } catch (error) {
       if (error?.code !== "RECOVERY_TIME_EXCEEDED") throw error;
     }
@@ -723,13 +739,6 @@ export async function runInvoiceException(input, deps) {
   const { subject: _readbackSubject, ...readbackAttestation } = readback.readback_attestation ?? {};
 
   if (!serviceReceiptVerified) {
-    if (!verified) {
-      await awaitBoundary(
-        "compensate_after_unverified_effect",
-        ({ signal }) => deps.compensate({ effect, context, reason: "unverified_effect_and_postcondition" }, { signal }),
-        { recovery: true },
-      );
-    }
     const incident = await awaitBoundary("open_receipt_incident", ({ signal }) => deps.openIncident({
       run_id: runId,
       effect,
@@ -737,10 +746,25 @@ export async function runInvoiceException(input, deps) {
       severity: "SEV-1",
       reason: verified ? "service_receipt_invalid" : "service_receipt_and_readback_invalid",
     }, { signal }), { recovery: true });
-    return terminal(verified ? "escalated" : "postcondition_failed", verified ? "service_receipt_invalid" : "readback_mismatch", {
+    return terminal("escalated", "service_receipt_invalid", {
       error_code: "SERVICE_RECEIPT_INVALID",
       effect,
       readback,
+      incident_id: incident.incident_id,
+    });
+  }
+
+  if (!verified && (!readbackAttestationVerified || !readbackChronologyValid
+    || expectedPostconditionDigest === observedPostconditionDigest)) {
+    const incident = await awaitBoundary("open_unverified_readback_incident", ({ signal }) => deps.openIncident({
+      run_id: runId,
+      effect,
+      readback,
+      severity: "SEV-1",
+      reason: "postcondition_verification_unavailable",
+    }, { signal }), { recovery: true });
+    return terminal("postcondition_failed", "readback_mismatch", {
+      effect,
       incident_id: incident.incident_id,
     });
   }

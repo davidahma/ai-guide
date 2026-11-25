@@ -17,6 +17,7 @@ Social, Reddit, YouTube, and news are research channels—not automatic authorit
 
 ## Current research sets
 
+- [Agent evaluation and operating evidence](2026-11-25--agent-evaluation-and-operating-evidence.md) — reviewed November 25. Matched-budget evaluation, recurring development suites, data lifecycle checks, scoped containment and current interoperability guidance.
 - [Analytics semantics and result evaluation](2026-10-04--analytics-semantics-and-evaluation.md) — first-party join, query-evaluation, and context-ingestion documentation; precise metric contracts and held-out result checks, without a mandatory graph stack or product accuracy claim.
 - [Workflow step redesign](2026-10-01--workflow-step-redesign.md) — inspected Varick presentation and episode notes; step necessity, upstream repair, and return-loop measures, with changed figures, composite examples, and unverified outcomes kept explicit.
 - [Decision models, failure localization, and decision learning](2026-09-23--decision-models-and-decision-learning.md) — bounded Jev and judge evidence, first-divergence diagnosis, and UiPath's vendor account of reasoned overrides; no model default, universal map, or automatic policy learning.

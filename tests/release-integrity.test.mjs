@@ -17,6 +17,7 @@ import {
   expectedEvaluationOutputDigest,
   expectedEvaluationSandboxDigest,
   expectedSolutionReleaseDigest,
+  sha256Digest,
   solutionReleaseSemanticErrors,
   toolContractSemanticErrors,
 } from "../scripts/contract-invariants.mjs";
@@ -748,6 +749,90 @@ test("repository validation rejects release and evaluation integrity bypasses", 
 
     const baseline = await runValidator(repositoryRoot);
     assert.equal(baseline.exitCode, 0, baseline.output);
+
+    await t.test("repository validation accepts executed qualification for the resolved suite", async () => {
+      const example = "examples/invoice-exception";
+      const reportPath = path.join(repositoryRoot, example, "evaluation-report.json");
+      const outputPath = path.join(repositoryRoot, example, "evaluation-output.json");
+      const releasePath = path.join(repositoryRoot, example, "solution-release.json");
+      const suitePath = path.join(repositoryRoot, example, "evals");
+      const cases = (await readdir(suitePath)).map((file) => path.join(suitePath, file));
+      const paths = [reportPath, outputPath, releasePath, ...cases];
+      const originals = await Promise.all(paths.map((file) => readFile(file, "utf8")));
+      const [report, output, release, ...caseDocuments] = originals.map((contents) => JSON.parse(contents));
+      const observationPath = path.join(repositoryRoot, example, "qualification-observations.json");
+      const policyDigest = await sha256Path(path.join(repositoryRoot, example, "authorization-policy.mjs"));
+      const development = [{ case_id: "development_case", group_id: "development_group" }];
+      const holdout = output.cases.map(({ case_id }) => ({ case_id, group_id: case_id }))
+        .sort((left, right) => left.case_id < right.case_id ? -1 : 1);
+      const segment = report.population.segments[0];
+      const observations = {
+        $schema: "../../schemas/qualification-observations.schema.json",
+        schema_version: "1.0.0",
+        segment,
+        effect_class: "staged",
+        execution_mode: "terminal_replay",
+        policy_digest: policyDigest,
+        environment_digest: report.system.environment.environment_digest,
+        grader_digest: report.evaluator.grader.digest,
+        frozen_at: "2026-08-07T14:00:00Z",
+        started_at: "2026-08-07T14:01:00Z",
+        completed_at: "2026-08-07T14:02:00Z",
+        development,
+        qualification: holdout,
+        results: holdout.map(({ case_id }) => ({ case_id, accepted: true, reviewed: false })),
+      };
+      const encode = (document) => `${JSON.stringify(document, null, 2)}\n`;
+      const template = await json("templates/evaluation-report.json", repositoryRoot);
+      const qualification = template.deployment_qualification;
+      report.deployment_qualification = qualification;
+      qualification.status = "qualified";
+      qualification.oversight_policy.digest = policyDigest;
+      qualification.oversight_policy.frozen_before_qualification = true;
+      qualification.execution_mode = observations.execution_mode;
+      qualification.execution_evidence = {
+        segment,
+        effect_class: observations.effect_class,
+        policy_uri: "authorization-policy.mjs",
+        observations_uri: path.basename(observationPath),
+        observations_digest: sha256Digest(encode(observations)),
+      };
+      qualification.evidence_partitions.development.digest = sha256Digest(development);
+      qualification.evidence_partitions.qualification.digest = sha256Digest(holdout);
+      const confidence = 0.95;
+      report.evaluator.minimum_confidence = confidence;
+      qualification.operating_point = {
+        target_reliability: 0.6,
+        observed_reliability: 1,
+        reliability_lower_bound: holdout.length / (holdout.length + 1.6448536269514722 ** 2),
+        confidence,
+        confidence_method: "one_sided_wilson",
+        autonomous_coverage: 1,
+        human_review_burden: 0,
+        routing_signal_quality: "Synthetic all-accepted qualification fixture",
+        expected_cost_per_case: 0,
+        currency: "USD",
+      };
+      try {
+        await writeFile(observationPath, encode(observations));
+        await Promise.all(cases.map((file, index) => writeFile(file, encode({ ...caseDocuments[index], target_segment: segment }))));
+        report.suite.digest = await sha256Path(suitePath);
+        report.suite.fixture_digest = await sha256Path(path.resolve(repositoryRoot, example, report.suite.fixture_uri));
+        output.suite_digest = report.suite.digest;
+        output.fixture_digest = report.suite.fixture_digest;
+        output.summary_digest = expectedEvaluationOutputDigest(report);
+        await writeFile(outputPath, encode(output));
+        report.evaluator.output.digest = await sha256Path(outputPath);
+        await writeFile(reportPath, encode(report));
+        release.artifacts.find((artifact) => artifact.role === "evaluation").digest = await sha256Path(reportPath);
+        await writeFile(releasePath, encode(bindReleaseDigest(release)));
+        const result = await runValidator(repositoryRoot);
+        assert.equal(result.exitCode, 0, result.output);
+      } finally {
+        await Promise.all(paths.map((file, index) => writeFile(file, originals[index])));
+        await rm(observationPath, { force: true });
+      }
+    });
 
     const approvedFixture = {
       releaseDirectory: path.join(repositoryRoot, "examples", "invoice-exception"),

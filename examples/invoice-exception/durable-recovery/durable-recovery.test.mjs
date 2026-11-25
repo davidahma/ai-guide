@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { createDurableRecoveryLab } from "./durable-recovery.mjs";
+import { dispatchQueuedIntake, reconcileIntake } from "./event-intake.mjs";
 import { previousPendingState, previousReleaseOperationId, previousReleaseRequest, recoverInFreshProcess, writePreviousState } from "./previous-release-fixture.mjs";
 
 const request = Object.freeze({
@@ -197,4 +198,65 @@ test("unknown state formats are refused without rewriting state", async (t) => {
 
   await assert.rejects(recoverInFreshProcess(root), /durable-recovery state is malformed/);
   assert.equal(await readFile(file, "utf8"), original);
+});
+
+test("event replay recovers one durable intake and detects truncated or missing history", () => {
+  const existing = { eventId: "arrived-1", position: 1, caseId: "invoice-1" };
+  const missing = { eventId: "arrived-2", position: 2, caseId: "invoice-2" };
+  const later = { eventId: "arrived-3", position: 3, caseId: "invoice-3" };
+  const previous = { cursor: 1, inbox: [existing], history: "reconciled" };
+
+  const firstDelivery = reconcileIntake(previous, { after: 1, through: 2, events: [missing] });
+  assert.equal(previous.cursor, 1);
+  assert.deepEqual(reconcileIntake(previous, { after: 1, through: 2, events: [missing] }), firstDelivery);
+  const duplicate = reconcileIntake(firstDelivery, { after: 2, through: 2, events: [missing] });
+  assert.deepEqual(duplicate, firstDelivery);
+
+  for (const page of [
+    { after: 1, through: 3, events: [later], truncated: true },
+    { after: 1, through: 3, events: [later] },
+    { after: null, through: 3, events: [] },
+  ]) {
+    const gap = reconcileIntake(previous, page);
+    assert.deepEqual(gap, { ...previous, history: "unknown" });
+    assert.equal(dispatchQueuedIntake(gap, existing.eventId, () => true), "history_unknown");
+    const fullJournal = { after: 1, through: 3, events: [missing, later] };
+    assert.deepEqual(reconcileIntake(gap, fullJournal), gap);
+    assert.deepEqual(reconcileIntake(gap, fullJournal, { fromSourceJournal: true }), {
+      cursor: 3, inbox: [existing, missing, later], history: "reconciled",
+    });
+  }
+});
+
+test("after revocation, dispatch is denied and an authorized operator reconciles a prior effect", async (t) => {
+  const affected = { eventId: "arrived-1", position: 1, caseId: "invoice-1" };
+  const neighboring = { eventId: "arrived-2", position: 2, caseId: "invoice-2" };
+  const accepted = reconcileIntake({ cursor: 0, inbox: [], history: "reconciled" }, {
+    after: 0, through: 2, events: [affected, neighboring],
+  });
+  const { lab } = await world(t);
+  await assert.rejects(lab.submit(request, { fault: "after_effect_before_receipt" }), {
+    code: "SIMULATED_AMBIGUOUS_EFFECT",
+  });
+  const [priorEffect] = Object.values(lab.inspect().effects);
+  const permissions = new Set([affected.caseId, neighboring.caseId]);
+  const currentPermission = ({ caseId }) => permissions.has(caseId);
+  for (const result of [false, null, 1, "allow", Promise.resolve(true)]) {
+    assert.equal(dispatchQueuedIntake(accepted, affected.eventId, () => result), "revoked");
+  }
+  assert.equal(dispatchQueuedIntake(accepted, affected.eventId, currentPermission), "authorized");
+  permissions.delete(affected.caseId);
+  assert.equal(dispatchQueuedIntake(accepted, affected.eventId, currentPermission), "revoked");
+  assert.equal(dispatchQueuedIntake(accepted, neighboring.eventId, currentPermission), "authorized");
+  assert.deepEqual(accepted, { cursor: 2, inbox: [affected, neighboring], history: "reconciled" });
+  const revokedRequest = { ...request, caller: { ...request.caller, scopes: [] } };
+  assert.equal((await lab.submit(revokedRequest)).status, "denied");
+  assert.equal((await lab.recover(revokedRequest)).status, "denied");
+
+  const reconciliationRequest = { ...request, caller: { ...request.caller, id: "operations-reviewer" } };
+  const reconciliation = await lab.recover(reconciliationRequest);
+  assert.equal(reconciliation.status, "completed");
+  assert.equal(reconciliation.receipt.effect_id, priorEffect.effect_id);
+  assert.equal(reconciliation.effect_created, false);
+  assert.deepEqual(Object.values(lab.inspect().effects), [priorEffect]);
 });

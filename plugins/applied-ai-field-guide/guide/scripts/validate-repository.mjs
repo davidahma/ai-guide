@@ -17,12 +17,15 @@ import {
   changeImpactAssessmentSemanticErrors,
   embeddedToolSchemaErrors,
   evaluationCaseSemanticErrors,
+  evaluationLabelAdmissionErrors,
   evaluationReportSemanticErrors,
   evaluationSandboxDigestPayload,
   expectedEvaluationEnvironmentDigest,
   expectedEvaluationOutputDigest,
   ontologyIdentityErrors,
   patternCatalogErrors,
+  promotionQualificationErrors,
+  qualificationExecutionErrors,
   solutionReleaseSemanticErrors,
   sha256Digest,
   systemMapManifestSemanticErrors,
@@ -40,6 +43,7 @@ import {
   workflowCharterSemanticErrors,
 } from "./governance-invariants.mjs";
 import { markdownAnchors } from "./markdown-anchors.mjs";
+import { parseStrictJson } from "./strict-json.mjs";
 import {
   agentArtifactReferences,
   capabilityManifestReferences,
@@ -245,83 +249,6 @@ function collectControlIds(value, ids = new Set()) {
   return ids;
 }
 
-function duplicateJsonKey(body) {
-  let cursor = 0;
-  const whitespace = /\s/;
-
-  function skipWhitespace() {
-    while (cursor < body.length && whitespace.test(body[cursor])) cursor += 1;
-  }
-
-  function parseString() {
-    const start = cursor;
-    cursor += 1;
-    while (cursor < body.length) {
-      if (body[cursor] === "\\") {
-        cursor += 2;
-      } else if (body[cursor] === "\"") {
-        cursor += 1;
-        return JSON.parse(body.slice(start, cursor));
-      } else {
-        cursor += 1;
-      }
-    }
-    return "";
-  }
-
-  function parseValue() {
-    skipWhitespace();
-    if (body[cursor] === "{") return parseObject();
-    if (body[cursor] === "[") return parseArray();
-    if (body[cursor] === "\"") {
-      parseString();
-      return null;
-    }
-    while (cursor < body.length && !/[\s,}\]]/.test(body[cursor])) cursor += 1;
-    return null;
-  }
-
-  function parseArray() {
-    cursor += 1;
-    skipWhitespace();
-    while (cursor < body.length && body[cursor] !== "]") {
-      const duplicate = parseValue();
-      if (duplicate) return duplicate;
-      skipWhitespace();
-      if (body[cursor] === ",") {
-        cursor += 1;
-        skipWhitespace();
-      }
-    }
-    cursor += 1;
-    return null;
-  }
-
-  function parseObject() {
-    cursor += 1;
-    skipWhitespace();
-    const keys = new Set();
-    while (cursor < body.length && body[cursor] !== "}") {
-      const key = parseString();
-      if (keys.has(key)) return { key };
-      keys.add(key);
-      skipWhitespace();
-      cursor += 1;
-      const duplicate = parseValue();
-      if (duplicate) return duplicate;
-      skipWhitespace();
-      if (body[cursor] === ",") {
-        cursor += 1;
-        skipWhitespace();
-      }
-    }
-    cursor += 1;
-    return null;
-  }
-
-  return parseValue();
-}
-
 const files = await walk(root);
 const textFiles = files.filter((file) => textExtensions.has(path.extname(file)) || textBasenames.has(path.basename(file)));
 const contents = new Map();
@@ -411,10 +338,7 @@ const documents = new Map();
 for (const file of jsonFiles) {
   try {
     const body = await readFile(file, "utf8");
-    const document = JSON.parse(body);
-    const duplicateKey = duplicateJsonKey(body);
-    if (duplicateKey) throw new Error(`duplicate object key ${JSON.stringify(duplicateKey.key)}`);
-    documents.set(file, document);
+    documents.set(file, parseStrictJson(body));
   } catch (error) {
     fail(`${relative(file)} is not valid JSON: ${error.message}`);
   }
@@ -653,9 +577,12 @@ for (const [file, document] of documents) {
 }
 for (const [file, content] of contents) {
   if (path.extname(file) !== ".md") continue;
-  for (const match of content.matchAll(/\b[A-Z]{3}-[0-9]{3}\b/g)) {
-    if (!controlPrefixes.has(match[0].slice(0, 3))) continue;
-    if (!definedControls.has(match[0])) fail(`${relative(file)} references undefined control ${match[0]}`);
+  const controlCitations = new Set([
+    ...[...content.matchAll(/\b[A-Z]{3}-[0-9]{3}\b/g)].map(([id]) => id).filter((id) => controlPrefixes.has(id.slice(0, 3))),
+    ...[...content.matchAll(/`([A-Z]{4,}-[0-9]{3})`/g)].map(([, id]) => id),
+  ]);
+  for (const id of controlCitations) {
+    if (!definedControls.has(id)) fail(`${relative(file)} references undefined control ${id}`);
   }
 }
 
@@ -1045,6 +972,7 @@ const referenceSchemas = new Map([
   ["data_context", "schemas/data-context-manifest.schema.json"],
   ["evaluation_case", "schemas/evaluation-case.schema.json"],
   ["evaluation_output", "schemas/evaluation-output.schema.json"],
+  ["qualification_observations", "schemas/qualification-observations.schema.json"],
   ["evaluation", "schemas/evaluation-report.schema.json"],
   ["evaluation_report", "schemas/evaluation-report.schema.json"],
   ["domain_model", "schemas/operational-ontology.schema.json"],
@@ -1336,6 +1264,15 @@ for (const [file, report] of documents) {
       }
     }
 
+    if (["qualification_policy", "qualification_observations"].includes(reference.kind)) {
+      const bytes = await readFile(resolved.lexicalTarget);
+      if (reference.digest !== sha256Digest(bytes)) {
+        fail(`${relative(file)} ${reference.field} digest does not match ${relative(resolved.lexicalTarget)}`);
+        continue;
+      }
+
+    }
+
     if (["evaluation_fixture", "evaluation_grader", "evaluation_runner", "evaluation_output", "evaluation_runtime", "evaluation_policy", "evaluation_world", "evaluation_dependency"].includes(reference.kind)) {
       const componentDigest = await sha256Path(resolved.lexicalTarget, resolved.metadata);
       if (reference.digest !== componentDigest) {
@@ -1361,6 +1298,32 @@ for (const [file, report] of documents) {
         && ![".js", ".mjs", ".cjs", ".wasm"].includes(path.extname(resolved.lexicalTarget))) {
         fail(`${relative(file)} ${reference.field} is not an executable evaluator artifact`);
       }
+    }
+  }
+
+  const qualifiedRun = resolvedReportReferences.get("qualification_observations")?.[0]?.resolved;
+  if (qualifiedRun && report.deployment_qualification?.status === "qualified") {
+    try {
+      const execution = parseStrictJson(await readFile(qualifiedRun.lexicalTarget, "utf8"));
+      for (const error of qualificationExecutionErrors(report, execution, relative(file))) fail(error);
+      const suite = resolvedReportReferences.get("evaluation_case")?.[0]?.resolved;
+      const suiteCases = new Map([...documents].filter(([candidate, document]) => document.case_id
+        && (candidate === suite?.lexicalTarget || candidate.startsWith(`${suite?.lexicalTarget}${path.sep}`)))
+        .map(([, document]) => [document.case_id, document]));
+      for (const member of Array.isArray(execution.qualification) ? execution.qualification : []) {
+        const evaluationCase = suiteCases.get(member?.case_id);
+        if (!evaluationCase) {
+          fail(`${relative(file)} qualification case ${member?.case_id} is outside the evaluated suite`);
+        } else if (evaluationCase.target_segment !== report.deployment_qualification.execution_evidence?.segment) {
+          fail(`${relative(file)} qualification case ${member?.case_id} does not name the qualified target segment`);
+        } else {
+          for (const error of evaluationLabelAdmissionErrors(evaluationCase, report.decision?.decided_at)) {
+            fail(`${relative(file)} qualification case ${member?.case_id}: ${error}`);
+          }
+        }
+      }
+    } catch {
+      fail(`${relative(file)} has invalid qualification observations`);
     }
   }
 
@@ -1890,6 +1853,11 @@ for (const [file, release] of documents) {
   if (evaluation?.decision?.status !== "accept") {
     fail(`${relative(file)} ${release.release_status} release requires an accepted evaluation report`);
   }
+  const admittedEffectClasses = releaseArtifactPaths("tool_contract")
+    .map((toolPath) => documents.get(toolPath)?.side_effects?.class);
+  for (const error of promotionQualificationErrors(release, evaluation, admittedEffectClasses)) {
+    fail(`${relative(file)} ${error}`);
+  }
   for (const segment of release.target_segments ?? []) {
     if (!(evaluation?.population?.segments ?? []).includes(segment)) {
       fail(`${relative(file)} target segment ${segment} is absent from the accepted evaluation population`);
@@ -2072,13 +2040,27 @@ for (const [file, release] of documents) {
       candidate: evaluation.suite.uri,
     });
     const evaluatedCaseIds = new Set();
+    const admissionTimes = [
+      evaluation.decision?.decided_at,
+      ...release.approvals.map((approval) => approval.approved_at),
+      release.deployment_evidence?.deployed_at,
+    ].filter(Boolean);
+    const admissionTime = admissionTimes.reduce((latest, current) => (
+      Date.parse(current) > Date.parse(latest) ? current : latest
+    ), admissionTimes[0]);
+    function admitCase(evaluationCase) {
+      if (!evaluationCase?.case_id) return;
+      evaluatedCaseIds.add(evaluationCase.case_id);
+      for (const error of evaluationLabelAdmissionErrors(evaluationCase, admissionTime)) {
+        fail(`${relative(file)} ${evaluationCase.case_id}: ${error}`);
+      }
+    }
     if (evaluatedSuite.metadata.isFile()) {
-      const evaluationCase = documents.get(evaluatedSuite.lexicalTarget);
-      if (evaluationCase?.case_id) evaluatedCaseIds.add(evaluationCase.case_id);
+      admitCase(documents.get(evaluatedSuite.lexicalTarget));
     } else {
       for (const [candidate, evaluationCase] of documents) {
         if (candidate.startsWith(`${evaluatedSuite.lexicalTarget}${path.sep}`) && evaluationCase?.case_id) {
-          evaluatedCaseIds.add(evaluationCase.case_id);
+          admitCase(evaluationCase);
         }
       }
     }

@@ -39,9 +39,11 @@ The $320 is conditional net time value, not cash savings. A small miss in adopti
 
 ## Graduation thresholds
 
-Posting requires separate approval and release evidence. Before continuing or expanding that later workflow, the illustrative thresholds are at least 200 independently verified ledger outcomes in the agreed monthly equivalent, at least five minutes saved per verified correction, no more than $6 in full window cost per verified correction, and zero prohibited or unverified effects. The numerator includes costs of failed, rejected, and no-action cases. If no correction was verified, the ratio is unavailable and the value gate cannot pass.
+Posting requires separate approval and release evidence. Before continuing or expanding that later workflow, require positive net value after full cost and residual loss for the same population and period. Also require at least 200 independently verified ledger outcomes in the agreed monthly equivalent, at least five minutes saved per verified correction, at most $6 in full window cost per verified correction, and zero prohibited or unverified effects. Full cost includes failed, rejected, and no-action cases. If no correction was verified, the ratio is unavailable and the value gate cannot pass.
 
-Stop or reshape if the authority boundary changes, representative cases show material uncovered exceptions, the eligible population is below 350 per month, reviewer time does not improve, the cost ceiling is breached, or any unauthorized, duplicate, or unverified effect occurs.
+Check the thresholds together. At 200 verified corrections, five minutes saved each at $55 per hour gives $916.67 in gross monthly time value. Spending $6 per correction costs $1,200, so the result is a $283.33 monthly loss even before residual loss. Hold at that point. At five minutes and $55 per hour, cost must be below the break-even value of about $4.58 per correction before residual loss. The forecast above uses different assumptions and still yields $320 in conditional net time value.
+
+Stop or reshape if value after full cost and residual loss is zero or negative, the authority boundary changes, representative cases show material uncovered exceptions, the eligible population is below 350 per month, reviewer time does not improve, the cost ceiling is breached, or any unauthorized, duplicate, or unverified effect occurs.
 
 ## What is measured separately
 

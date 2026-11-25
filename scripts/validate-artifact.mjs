@@ -15,6 +15,7 @@ import {
 } from "./governance-invariants.mjs";
 import { expectedDocumentSchema, governedDocumentSchema } from "./repository-paths.mjs";
 import { artifactTypes, artifactSemanticErrors } from "./artifact-types.mjs";
+import { parseStrictJson } from "./strict-json.mjs";
 
 const repositoryRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -186,7 +187,7 @@ export async function validateArtifact({ file, profile = "complete", type = null
   const inputPath = path.resolve(file);
   let document;
   try {
-    document = JSON.parse(await readFile(inputPath, "utf8"));
+    document = parseStrictJson(await readFile(inputPath, "utf8"));
   } catch (error) {
     return { ok: false, file: inputPath, profile, type, errors: [`cannot read valid JSON: ${error.message}`] };
   }

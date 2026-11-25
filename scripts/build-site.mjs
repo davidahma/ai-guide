@@ -335,7 +335,7 @@ async function renderPage(page) {
   <meta name="twitter:image:alt" content="The Applied AI Field Guide: understand the work, choose the mechanism, prove the outcome, operate the system.">
   ${renderJsonLd(page, heading, updated)}
 </head>
-<body data-search-index="${escapeHtml(searchIndex)}" data-site-base="${escapeHtml(siteBase)}">
+<body data-search-index="${escapeHtml(searchIndex)}" data-site-root="${escapeHtml(home)}">
   <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
     <div class="header-inner">
